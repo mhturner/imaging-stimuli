@@ -1,6 +1,6 @@
 presentation = stage.core.Presentation(5);
 window = stage.core.Window([600, 600], false);
-canvas = stage.core.Canvas(window, 'disableDwm', false);
+canvas = turner.stage.Canvas(window, 'disableDwm', false);
 
 projection = turner.stage.MatrixStack();
 % projection.perspective(90, canvas.width/canvas.height);
