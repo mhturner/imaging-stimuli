@@ -3,7 +3,7 @@ classdef Grating < turner.stimuli.PerspectiveSphere
         contrast = 1            % Scale factor for color values (-1 to 1, negative values invert the grating)
         size = [100, 100]       % Size [width, height] (pixels)
         phase = 0               % Phase offset (degrees)
-        spatialFreq = 1/100     % Spatial frequency (cycles/pixels)
+        spatialFreq = 20/360     % Spatial frequency (cycles per degree)
     end
     properties (Access = private)
         profile                     % Luminance profile wave ('sine', 'square', or 'sawtooth')
@@ -99,11 +99,11 @@ classdef Grating < turner.stimuli.PerspectiveSphere
                 c = [c, obj.opacity];
             end
             
-            % STRIDE here is 4 * (obj.numSides+1)*(obj.numSides+2)
+            % STRIDE here is 4 * (obj.numSteps+1)*(obj.numSteps+2)
             %   4 vertices defined in each iteration above. Do that for
-            %   each phi (numSides+1) and theta ((numSides+2) because of
+            %   each phi (numSteps+1) and theta ((numSteps+2) because of
             %   wrap-around)
-            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 4*(obj.numSides+1)*(obj.numSides+2), c, [], obj.texture);
+            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 4*(obj.numSteps+1)*(obj.numSteps+1), c, [], obj.texture);
             
             modelView.pop();
         end
@@ -127,26 +127,27 @@ classdef Grating < turner.stimuli.PerspectiveSphere
         
 
         function updateTexture(obj)
-% %             switch obj.profile
-% %                 case 'sine'
-% %                     wave = sin(linspace(0, 2*pi, obj.resolution));
-% %                 case 'square'
-% %                     wave = sin(linspace(0, 2*pi, obj.resolution));
-% %                     wave(wave >= 0) = 1;
-% %                     wave(wave < 0) = -1;
-% %                 case 'sawtooth'
-% %                     wave = linspace(-1, 1, obj.resolution);
-% %             end
-% %             
-% %             wave = wave * obj.contrast;
-% %             wave = (wave + 1) / 2 * 255;
+            cyclesPerSphere = obj.spatialFreq * 360;
+            switch obj.profile
+                case 'sine'
+                    wave = sin(cyclesPerSphere*linspace(0, 2*pi, obj.resolution));
+                case 'square'
+                    wave = sin(cyclesPerSphere*linspace(0, 2*pi, obj.resolution));
+                    wave(wave >= 0) = 1;
+                    wave(wave < 0) = -1;
+                case 'sawtooth'
+                    wave = cyclesPerSphere*linspace(-1, 1, obj.resolution);
+            end
             
-            wave = sin(30*linspace(0, 2*pi, 512));
-            wave(wave >= 0) = 1;
-            wave(wave < 0) = -1;
-
-            wave = wave * 0.9;
+            wave = wave * obj.contrast;
             wave = (wave + 1) / 2 * 255;
+            
+%             wave = sin(cyclesPerSphere*linspace(0, 2*pi, obj.resolution));
+%             wave(wave >= 0) = 1;
+%             wave(wave < 0) = -1;
+% 
+%             wave = wave * 0.9;
+%             wave = (wave + 1) / 2 * 255;
 
             image = ones(1, 512, 4, 'uint8') * 255;
             image(:, :, 1:3) = [wave; wave; wave]';

@@ -15,7 +15,7 @@ classdef PerspectiveSphere < stage.core.Stimulus
     end
     
     properties (SetAccess = private)
-        numSides    % Number of side of the regular polygon base
+        numSteps    % Number of steps to take along each angular direction for each triangle
         vbo     % Vertex buffer object
         vao     % Vertex array object
         vertexData
@@ -23,12 +23,16 @@ classdef PerspectiveSphere < stage.core.Stimulus
 
     methods
         
-        function obj = PerspectiveSphere(numSides)
+        function obj = PerspectiveSphere(numSteps)
             % Constructs a 3D sphere stimulus
             if nargin < 1
-                numSides = 101;
+                numSteps = 100; %must be even
+            else
+                if mod(numSteps,2) %isodd
+                    error('numSteps must be even')
+                end
             end
-            obj.numSides = numSides;
+            obj.numSteps = numSteps;
 
         end
         
@@ -51,49 +55,59 @@ classdef PerspectiveSphere < stage.core.Stimulus
                 shiftY = 0;
             end
             % makes a sphere using a single, long triangle strip
-            i = (0:obj.numSides)/obj.numSides;
-            phi = i * 1 * pi;  %vertical angles (y)
-            theta = i * 2 * pi; %horizontal angles  (x,z)
+            % TODO: parameterize these phi/theta start & ends based on
+            % degree of visual field subtended by screen
+            %phi = vertical angles (y). 0:pi gives full sphere
+            phiStart = 0.2*pi; phiEnd = 0.8*pi; phiRange = phiEnd - phiStart;
+            phi = linspace(phiStart,phiEnd,obj.numSteps);
             
+            %theta = horizontal angles  (x,z). 0:2pi gives full sphere
+            %pi is straight down -z axis
+            thetaStart = 0.5*pi; thetaEnd = 1.5*pi; thetaRange = thetaEnd - thetaStart;
+            theta = linspace(thetaStart,thetaEnd,obj.numSteps);
+
+            %Step along each angle (i.e. length of each triangle side)
             phiStep = mean(diff(phi));
             thetaStep = mean(diff(theta));
-
-            [PHI, THETA] = meshgrid([phi],[theta theta(1)]); %wrap around horizontally to prevent weird sawtooth artifact at edge
-            phi = PHI(:);
-            theta = THETA(:);
+            
+            %vertically: one horizontal strip at a time
+            phi = kron(phi,ones(1,obj.numSteps));
+            %horizontally: sweep right then left. Repeat for each pair of
+            %strips
+            theta = repmat([theta, theta(end:-1:1)],1,obj.numSteps/2);
 
             stride = 24;
-            obj.vertexData = zeros(1, size(phi,1) * 6 * 4);
+            obj.vertexData = zeros(1, size(phi,2) * 6 * 4);
             obj.vertexData(1:stride:end) = sin(theta) .* sin(phi); %x
             obj.vertexData(2:stride:end) = cos(phi); %y
             obj.vertexData(3:stride:end) = cos(theta) .* sin(phi); %z
             obj.vertexData(4:stride:end) = 1; %?
-            obj.vertexData(5:stride:end) = theta / (2*pi) + shiftX; %texture U
-            obj.vertexData(6:stride:end) = phi / (pi) + shiftY; %texture V
+            obj.vertexData(5:stride:end) = theta / thetaRange + shiftX; %texture U
+            obj.vertexData(6:stride:end) = phi / phiRange + shiftY; %texture V
             
             %next vertex: step on vertical angle (phi)
             obj.vertexData(7:stride:end) = sin(theta) .* sin(phi+phiStep); %x
             obj.vertexData(8:stride:end) = cos(phi+phiStep); %y
             obj.vertexData(9:stride:end) = cos(theta) .* sin(phi+phiStep); %z
             obj.vertexData(10:stride:end) = 1;
-            obj.vertexData(11:stride:end) = theta / (2*pi) + shiftX;
-            obj.vertexData(12:stride:end) = (phi + phiStep) / (pi) + shiftY;
+            obj.vertexData(11:stride:end) = theta / thetaRange + shiftX;
+            obj.vertexData(12:stride:end) = (phi + phiStep) / phiRange + shiftY;
 
             %next vertex: step on horizontal angle (theta)
             obj.vertexData(13:stride:end) = sin(theta+thetaStep) .* sin(phi); %x
             obj.vertexData(14:stride:end) = cos(phi); %y
             obj.vertexData(15:stride:end) = cos(theta+thetaStep) .* sin(phi); %z
             obj.vertexData(16:stride:end) = 1;
-            obj.vertexData(17:stride:end) = (theta+thetaStep) / (2*pi) + shiftX;
-            obj.vertexData(18:stride:end) = phi / (pi) + shiftY;
+            obj.vertexData(17:stride:end) = (theta+thetaStep) / thetaRange + shiftX;
+            obj.vertexData(18:stride:end) = phi / phiRange + shiftY;
 
             %next vertex: step on theta & phi (diagonal)
             obj.vertexData(19:stride:end) = sin(theta+thetaStep) .* sin(phi+phiStep); %x
             obj.vertexData(20:stride:end) = cos(phi+phiStep); %y
             obj.vertexData(21:stride:end) = cos(theta+thetaStep) .* sin(phi+phiStep); %z
             obj.vertexData(22:stride:end) = 1;
-            obj.vertexData(23:stride:end) = (theta+thetaStep) / (2*pi) + shiftX;
-            obj.vertexData(24:stride:end) = (phi+phiStep) / (pi) + shiftY;
+            obj.vertexData(23:stride:end) = (theta+thetaStep) / thetaRange + shiftX;
+            obj.vertexData(24:stride:end) = (phi+phiStep) / phiRange + shiftY;
         end
         
     end

@@ -12,7 +12,7 @@ Grate = turner.stimuli.Grating('square');
     %Properties of sphere:
 Grate.radius = 1;
 Grate.height = 1;
-Grate.position = [0 0 0];
+Grate.position = [0 0 -1];
 Grate.opacity = 1;
 % Grate.color = [0 0 1];
 Grate.orientation = 0;
