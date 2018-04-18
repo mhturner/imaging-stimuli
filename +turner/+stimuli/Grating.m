@@ -16,7 +16,7 @@ classdef Grating < turner.stimuli.PerspectiveSphere
         needToUpdateTexture
     end
     methods
-        function obj = Grating(profile)
+        function obj = Grating(profile,resolution)
                 % Grating texture to paint on parent class
                 % PerspectiveSphere
                 if nargin < 1
@@ -65,40 +65,64 @@ classdef Grating < turner.stimuli.PerspectiveSphere
             obj.texture.setWrapModeS(GL.REPEAT);
             obj.texture.setImage(zeros(1, obj.resolution, 4, 'uint8'));
 
-%             obj.updateVertexBuffer();
-            obj.updateTexture();
-% %             
-% %             
-% %             switch obj.profile
-% %                 case 'sine'
-% %                     wave = sin(linspace(0, 2*pi, obj.resolution));
-% %                 case 'square'
-% %                     wave = sin(linspace(0, 2*pi, obj.resolution));
-% %                     wave(wave >= 0) = 1;
-% %                     wave(wave < 0) = -1;
-% %                 case 'sawtooth'
-% %                     wave = linspace(-1, 1, obj.resolution);
-% %             end
-% % 
-% %             wave = wave * obj.contrast;
-% %             wave = (wave + 1) / 2 * 255;
-% % 
-% %             image = ones(1, obj.resolution, 4, 'uint8') * 255;
-% %             image(:, :, 1:3) = [wave; wave; wave]';
-% % 
-% %             obj.texture.setSubImage(image);
-% % 
-% %             obj.needToUpdateTexture = false;
-% %             
-% %             
+            obj.updateVertexBuffer();
+            obj.updateTexture();                  
+        end
+        
+        function set.phase(obj, phase)
+            obj.phase = phase;
+            obj.needToUpdateVertexBuffer = true; %#ok<MCSUP>
+        end
+    end
+    
+    methods (Access = protected)
+        function performDraw(obj)
+            if obj.needToUpdateVertexBuffer
+                obj.updateVertexBuffer();
+            end
             
-% %             
+            if obj.needToUpdateTexture
+                obj.updateTexture();
+            end
             
+            modelView = obj.canvas.modelView;
+            modelView.push();
+            modelView.translate(obj.position(1), obj.position(2), obj.position(3));
+            modelView.rotate(obj.orientation, 0, 0, 1);
+            modelView.rotate(obj.angularPosition, 0, -1, 0);
+            modelView.scale(obj.radius, obj.height, obj.radius); %x,y,z
             
+            c = obj.color;
+            if length(c) == 1
+                c = [c, c, c, obj.opacity];
+            elseif length(c) == 3
+                c = [c, obj.opacity];
+            end
+            
+            % STRIDE here is 4 * (obj.numSides+1)*(obj.numSides+2)
+            %   4 vertices defined in each iteration above. Do that for
+            %   each phi (numSides+1) and theta ((numSides+2) because of
+            %   wrap-around)
+            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 4*(obj.numSides+1)*(obj.numSides+2), c, [], obj.texture);
+            
+            modelView.pop();
         end
     end
     
     methods (Access = private)
+
+        function updateVertexBuffer(obj)
+            nCycles = obj.size(1) * obj.spatialFreq;
+            shiftX = obj.phase / 360;
+            shiftY = obj.phase / 360;
+            
+            obj.getVertexData(shiftX,shiftY);
+            vertexData = obj.vertexData;
+            
+            obj.vbo.uploadData(single(vertexData));
+
+            obj.needToUpdateVertexBuffer = false;
+        end
 
         
 

@@ -18,17 +18,13 @@ classdef PerspectiveSphere < stage.core.Stimulus
         numSides    % Number of side of the regular polygon base
         vbo     % Vertex buffer object
         vao     % Vertex array object
+        vertexData
     end
-    
-    properties (Access = private)
-        
 
-    end
-    
     methods
         
         function obj = PerspectiveSphere(numSides)
-            % Constructs a 3D sphere stimulus with an optionally specified number of sides.
+            % Constructs a 3D sphere stimulus
             if nargin < 1
                 numSides = 101;
             end
@@ -36,15 +32,24 @@ classdef PerspectiveSphere < stage.core.Stimulus
 
         end
         
-%         function setImageMatrix(obj, matrix)
-%             if ~isa(matrix, 'uint8') && ~isa(matrix, 'single')
-%                 error('Matrix must be of class uint8 or single');
-%             end
-% %             obj.imageMatrix = matrix;
-%         end
-
         function init(obj, canvas)
             init@stage.core.Stimulus(obj, canvas);
+            obj.getVertexData();
+            obj.vbo = stage.core.gl.VertexBufferObject(canvas, GL.ARRAY_BUFFER, single(obj.vertexData), GL.STATIC_DRAW);
+
+            obj.vao = stage.core.gl.VertexArrayObject(canvas);
+            obj.vao.setAttribute(obj.vbo, 0, 4, GL.FLOAT, GL.FALSE, 6*4, 0);
+            obj.vao.setAttribute(obj.vbo, 1, 2, GL.FLOAT, GL.FALSE, 6*4, 4*4);
+
+        end
+        
+        function getVertexData(obj,shiftX,shiftY)
+            if nargin < 2
+                shiftX = 0;
+            end
+            if nargin < 3
+                shiftY = 0;
+            end
             % makes a sphere using a single, long triangle strip
             i = (0:obj.numSides)/obj.numSides;
             phi = i * 1 * pi;  %vertical angles (y)
@@ -58,78 +63,39 @@ classdef PerspectiveSphere < stage.core.Stimulus
             theta = THETA(:);
 
             stride = 24;
-            vertexData = zeros(1, size(phi,1) * 6 * 4);
-            vertexData(1:stride:end) = sin(theta) .* sin(phi); %x
-            vertexData(2:stride:end) = cos(phi); %y
-            vertexData(3:stride:end) = cos(theta) .* sin(phi); %z
-            vertexData(4:stride:end) = 1; %?
-            vertexData(5:stride:end) = theta / (2*pi); %texture U
-            vertexData(6:stride:end) = phi / (2*pi); %texture V
+            obj.vertexData = zeros(1, size(phi,1) * 6 * 4);
+            obj.vertexData(1:stride:end) = sin(theta) .* sin(phi); %x
+            obj.vertexData(2:stride:end) = cos(phi); %y
+            obj.vertexData(3:stride:end) = cos(theta) .* sin(phi); %z
+            obj.vertexData(4:stride:end) = 1; %?
+            obj.vertexData(5:stride:end) = theta / (2*pi) + shiftX; %texture U
+            obj.vertexData(6:stride:end) = phi / (pi) + shiftY; %texture V
             
             %next vertex: step on vertical angle (phi)
-            vertexData(7:stride:end) = sin(theta) .* sin(phi+phiStep); %x
-            vertexData(8:stride:end) = cos(phi+phiStep); %y
-            vertexData(9:stride:end) = cos(theta) .* sin(phi+phiStep); %z
-            vertexData(10:stride:end) = 1;
-            vertexData(11:stride:end) = theta / (2*pi);
-            vertexData(12:stride:end) = (phi + phiStep) / (2*pi);
+            obj.vertexData(7:stride:end) = sin(theta) .* sin(phi+phiStep); %x
+            obj.vertexData(8:stride:end) = cos(phi+phiStep); %y
+            obj.vertexData(9:stride:end) = cos(theta) .* sin(phi+phiStep); %z
+            obj.vertexData(10:stride:end) = 1;
+            obj.vertexData(11:stride:end) = theta / (2*pi) + shiftX;
+            obj.vertexData(12:stride:end) = (phi + phiStep) / (pi) + shiftY;
 
             %next vertex: step on horizontal angle (theta)
-            vertexData(13:stride:end) = sin(theta+thetaStep) .* sin(phi); %x
-            vertexData(14:stride:end) = cos(phi); %y
-            vertexData(15:stride:end) = cos(theta+thetaStep) .* sin(phi); %z
-            vertexData(16:stride:end) = 1;
-            vertexData(17:stride:end) = (theta+thetaStep) / (2*pi);
-            vertexData(18:stride:end) = phi / (2*pi);
+            obj.vertexData(13:stride:end) = sin(theta+thetaStep) .* sin(phi); %x
+            obj.vertexData(14:stride:end) = cos(phi); %y
+            obj.vertexData(15:stride:end) = cos(theta+thetaStep) .* sin(phi); %z
+            obj.vertexData(16:stride:end) = 1;
+            obj.vertexData(17:stride:end) = (theta+thetaStep) / (2*pi) + shiftX;
+            obj.vertexData(18:stride:end) = phi / (pi) + shiftY;
 
             %next vertex: step on theta & phi (diagonal)
-            vertexData(19:stride:end) = sin(theta+thetaStep) .* sin(phi+phiStep); %x
-            vertexData(20:stride:end) = cos(phi+phiStep); %y
-            vertexData(21:stride:end) = cos(theta+thetaStep) .* sin(phi+phiStep); %z
-            vertexData(22:stride:end) = 1;
-            vertexData(23:stride:end) = (theta+thetaStep) / (2*pi);
-            vertexData(24:stride:end) = (phi+phiStep) / (2*pi);
-
-            obj.vbo = stage.core.gl.VertexBufferObject(canvas, GL.ARRAY_BUFFER, single(vertexData), GL.STATIC_DRAW);
-
-            obj.vao = stage.core.gl.VertexArrayObject(canvas);
-            obj.vao.setAttribute(obj.vbo, 0, 4, GL.FLOAT, GL.FALSE, 6*4, 0);
-            obj.vao.setAttribute(obj.vbo, 1, 2, GL.FLOAT, GL.FALSE, 6*4, 4*4);
-            
-%             obj.texture = stage.core.gl.TextureObject(canvas, 2);
-%             %IMAGE
-%             obj.texture.setImage(image);
-
+            obj.vertexData(19:stride:end) = sin(theta+thetaStep) .* sin(phi+phiStep); %x
+            obj.vertexData(20:stride:end) = cos(phi+phiStep); %y
+            obj.vertexData(21:stride:end) = cos(theta+thetaStep) .* sin(phi+phiStep); %z
+            obj.vertexData(22:stride:end) = 1;
+            obj.vertexData(23:stride:end) = (theta+thetaStep) / (2*pi) + shiftX;
+            obj.vertexData(24:stride:end) = (phi+phiStep) / (pi) + shiftY;
         end
         
     end
     
-    methods (Access = protected)
-        
-        function performDraw(obj)
-            modelView = obj.canvas.modelView;
-            modelView.push();
-            modelView.translate(obj.position(1), obj.position(2), obj.position(3));
-            modelView.rotate(obj.orientation, 0, 0, 1);
-            modelView.rotate(obj.angularPosition, 0, -1, 0);
-            modelView.scale(obj.radius, obj.height, obj.radius); %x,y,z
-            
-            c = obj.color;
-            if length(c) == 1
-                c = [c, c, c, obj.opacity];
-            elseif length(c) == 3
-                c = [c, obj.opacity];
-            end
-            
-            % STRIDE here is 4 * (obj.numSides+1)*(obj.numSides+2)
-            %   4 vertices defined in each iteration above. Do that for
-            %   each phi (numSides+1) and theta ((numSides+2) because of
-            %   wrap-around)
-            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 4*(obj.numSides+1)*(obj.numSides+2), c, [], obj.texture);
-            
-            modelView.pop();
-        end
-        
-    end
 end
-
