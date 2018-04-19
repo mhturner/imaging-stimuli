@@ -12,9 +12,6 @@ classdef BrukerWithLightCrafter < symphonyui.core.descriptions.RigDescription
             daq = NiSimulationDaqController();
             obj.daqController = daq;
             
-            amp1 = MultiClampDevice('Amp1', 1).bindStream(daq.getStream('ao0')).bindStream(daq.getStream('ai0'));
-            obj.addDevice(amp1);
-            
             daq = obj.daqController;
             
             lightCrafter = riekelab.devices.LightCrafterDevice('micronsPerPixel', 1.3);
