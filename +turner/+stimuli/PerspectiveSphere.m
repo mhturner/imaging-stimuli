@@ -94,32 +94,32 @@ classdef PerspectiveSphere < stage.core.Stimulus
             obj.vertexData(2:stride:end) = cos(phi); %y
             obj.vertexData(3:stride:end) = cos(theta) .* sin(phi); %z
             obj.vertexData(4:stride:end) = 1; %?
-            obj.vertexData(5:stride:end) = nCycles * (theta / thetaRange) + shiftX; %texture U
-            obj.vertexData(6:stride:end) = nCycles * (phi / phiRange) + shiftY; %texture V
+            obj.vertexData(5:stride:end) = nCycles * ((theta-thetaStart) / thetaRange) + shiftX; %texture U
+            obj.vertexData(6:stride:end) = nCycles * ((phi-phiStart)/ phiRange) + shiftY; %texture V
             
             %next vertex: step on vertical angle (phi)
             obj.vertexData(7:stride:end) = sin(theta) .* sin(phi+phiStep); %x
             obj.vertexData(8:stride:end) = cos(phi+phiStep); %y
             obj.vertexData(9:stride:end) = cos(theta) .* sin(phi+phiStep); %z
             obj.vertexData(10:stride:end) = 1;
-            obj.vertexData(11:stride:end) = nCycles * (theta / thetaRange) + shiftX;
-            obj.vertexData(12:stride:end) = nCycles * ((phi + phiStep) / phiRange) + shiftY;
+            obj.vertexData(11:stride:end) = nCycles * ((theta-thetaStart) / thetaRange) + shiftX;
+            obj.vertexData(12:stride:end) = nCycles * (((phi-phiStart) + phiStep) / phiRange) + shiftY;
 
             %next vertex: step on horizontal angle (theta)
             obj.vertexData(13:stride:end) = sin(theta+thetaStep) .* sin(phi); %x
             obj.vertexData(14:stride:end) = cos(phi); %y
             obj.vertexData(15:stride:end) = cos(theta+thetaStep) .* sin(phi); %z
             obj.vertexData(16:stride:end) = 1;
-            obj.vertexData(17:stride:end) = nCycles * ((theta+thetaStep) / thetaRange) + shiftX;
-            obj.vertexData(18:stride:end) = nCycles + (phi / phiRange) + shiftY;
+            obj.vertexData(17:stride:end) = nCycles * (((theta-thetaStart)+thetaStep) / thetaRange) + shiftX;
+            obj.vertexData(18:stride:end) = nCycles * ((phi-phiStart) / phiRange) + shiftY;
 
             %next vertex: step on theta & phi (diagonal)
             obj.vertexData(19:stride:end) = sin(theta+thetaStep) .* sin(phi+phiStep); %x
             obj.vertexData(20:stride:end) = cos(phi+phiStep); %y
             obj.vertexData(21:stride:end) = cos(theta+thetaStep) .* sin(phi+phiStep); %z
             obj.vertexData(22:stride:end) = 1;
-            obj.vertexData(23:stride:end) = nCycles * ((theta+thetaStep) / thetaRange) + shiftX;
-            obj.vertexData(24:stride:end) = nCycles * ((phi+phiStep) / phiRange) + shiftY;
+            obj.vertexData(23:stride:end) = nCycles * (((theta-thetaStart)+thetaStep) / thetaRange) + shiftX;
+            obj.vertexData(24:stride:end) = nCycles * (((phi-phiStart)+phiStep) / phiRange) + shiftY;
         end
         
     end
