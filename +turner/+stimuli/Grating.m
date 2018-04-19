@@ -1,17 +1,13 @@
 classdef Grating < turner.stimuli.PerspectiveSphere
+    %Grating texture to paint on perspective semi-sphere
     properties
         contrast = 1            % Scale factor for color values (-1 to 1, negative values invert the grating)
-        size = [100, 100]       % Size [width, height] (pixels)
         phase = 0               % Phase offset (degrees)
-        spatialFreq = 20/360     % Spatial frequency (cycles per degree)
+        spatialFreq = 0.05     % Spatial frequency (cycles per degree)
     end
     properties (Access = private)
         profile                     % Luminance profile wave ('sine', 'square', or 'sawtooth')
         resolution                  % Texture resolution
-        minFunction                 % Texture minifying function
-        magFunction                 % Texture magnification function
-        wrapModeS                   % Wrap mode for texture coordinate s (i.e. x)
-        wrapModeT                   % Wrap mode for texture coordinate t (i.e. y)
         needToUpdateVertexBuffer
         needToUpdateTexture
     end
@@ -30,34 +26,8 @@ classdef Grating < turner.stimuli.PerspectiveSphere
                 end
                 obj.profile = profile;
                 obj.resolution = resolution;
-                
-                obj.minFunction = GL.LINEAR_MIPMAP_LINEAR;
-                obj.magFunction = GL.LINEAR;
-                obj.wrapModeS = GL.REPEAT;
-                obj.wrapModeT = GL.REPEAT;
         end
-        
-       function setMinFunction(obj, func)
-            % Sets the OpenGL minifying function for the image (GL.NEAREST, GL.LINEAR, GL.NEAREST_MIPMAP_NEAREST, etc).
-            obj.minFunction = func;
-        end
-        
-        function setMagFunction(obj, func)
-            % Sets the OpenGL magnifying function for the image (GL.NEAREST or GL.LINEAR).
-            obj.magFunction = func;
-        end
-        
-        function setWrapModeS(obj, mode)
-            % Sets the OpenGL S (i.e. X) coordinate wrap mode for the image (GL.CLAMP_TO_EDGE, GL.MIRRORED_REPEAT, GL.REPEAT, etc).
-            obj.wrapModeS = mode;
-        end
-        
-        function setWrapModeT(obj, mode)
-            % Sets the OpenGL T (i.e. Y) coordinate wrap mode for the image (GL.CLAMP_TO_EDGE, GL.MIRRORED_REPEAT, GL.REPEAT, etc).
-            obj.wrapModeT = mode;
-        end
-
-        
+       
         function init(obj, canvas)
             init@turner.stimuli.PerspectiveSphere(obj, canvas);
 
@@ -112,11 +82,14 @@ classdef Grating < turner.stimuli.PerspectiveSphere
     methods (Access = private)
 
         function updateVertexBuffer(obj)
-            nCycles = obj.size(1) * obj.spatialFreq;
-            shiftX = obj.phase / 360;
-            shiftY = obj.phase / 360;
+            segmentExtent = rad2deg(obj.thetaLimits(2) - obj.thetaLimits(1));
             
-            obj.getVertexData(shiftX,shiftY);
+            %multiplier on texture coords, how many repeats of grating?
+            nCycles = obj.spatialFreq * segmentExtent; 
+
+            phaseShift = obj.phase / 360; % normalize to texture coords [0,1]
+            
+            obj.getVertexData(phaseShift,0,nCycles);
             vertexData = obj.vertexData;
             
             obj.vbo.uploadData(single(vertexData));
@@ -124,69 +97,30 @@ classdef Grating < turner.stimuli.PerspectiveSphere
             obj.needToUpdateVertexBuffer = false;
         end
 
-        
-
         function updateTexture(obj)
-            cyclesPerSphere = obj.spatialFreq * 360;
             switch obj.profile
                 case 'sine'
-                    wave = sin(cyclesPerSphere*linspace(0, 2*pi, obj.resolution));
+                    wave = sin(linspace(0, 2*pi, obj.resolution));
                 case 'square'
-                    wave = sin(cyclesPerSphere*linspace(0, 2*pi, obj.resolution));
+                    wave = sin(linspace(0, 2*pi, obj.resolution));
                     wave(wave >= 0) = 1;
                     wave(wave < 0) = -1;
                 case 'sawtooth'
-                    wave = cyclesPerSphere*linspace(-1, 1, obj.resolution);
+                    wave = linspace(-1, 1, obj.resolution);
             end
             
             wave = wave * obj.contrast;
             wave = (wave + 1) / 2 * 255;
             
-%             wave = sin(cyclesPerSphere*linspace(0, 2*pi, obj.resolution));
-%             wave(wave >= 0) = 1;
-%             wave(wave < 0) = -1;
-% 
-%             wave = wave * 0.9;
-%             wave = (wave + 1) / 2 * 255;
-
-            image = ones(1, 512, 4, 'uint8') * 255;
+            image = ones(1, obj.resolution, 4, 'uint8') * 255;
             image(:, :, 1:3) = [wave; wave; wave]';
-            obj.texture.setImage(image);
             
+            obj.texture.setSubImage(image);
             
-            % 
-%             image = ones(1, obj.resolution, 4, 'uint8') * 255;
-%             image(:, :, 1:3) = [wave; wave; wave]';
-% 
-%             obj.texture.setImage(image);
-% 
-%             obj.needToUpdateTexture = false;
-            
-            
-            
-            
-            obj.texture.setWrapModeS(obj.wrapModeS);
-            obj.texture.setWrapModeT(obj.wrapModeT);
-            obj.texture.setMinFunction(obj.minFunction);
-            obj.texture.setMagFunction(obj.magFunction);
-%             
-%                 minFunc = obj.minFunction;
-%             if minFunc == GL.LINEAR_MIPMAP_LINEAR ...
-%                 || minFunc == GL.LINEAR_MIPMAP_NEAREST ...
-%                 || minFunc == GL.NEAREST_MIPMAP_NEAREST ...
-%                 || minFunc == GL.NEAREST_MIPMAP_LINEAR ...
-% 
-%                 obj.texture.generateMipmap();
-%             end
-%             
-%             
-%             
-            
-
+            obj.needToUpdateTexture = false;
 
         end
 
     end
-    
     
 end

@@ -1,32 +1,32 @@
 presentation = stage.core.Presentation(5);
-window = stage.core.Window([600, 600], false);
+windowSize = [800, 800];
+window = stage.core.Window(windowSize, false);
 canvas = turner.stage.Canvas(window, 'disableDwm', false);
 
 %Set projection matrix
 projection = turner.stage.MatrixStack();
-projection.flyPerspective();
+projection.flyPerspective(windowSize);
 canvas.setProjection(projection); %set perspective 
 
 %Grating stimulus:
 Grate = turner.stimuli.Grating('square');
-    %Properties of sphere:
-Grate.radius = 1;
-Grate.height = 1;
-Grate.position = [0 0 -1];
-Grate.opacity = 1;
+
+Grate.contrast = 0.5;
+Grate.position = [0 0 0];
 % Grate.color = [0 0 1];
 Grate.orientation = 0;
+Grate.spatialFreq = 1/10; %cpd
+% Grate.thetaLimits = [0, 2*pi];
+% Grate.phiLimits = [0, pi];
 
-    %Properties of texture (grating):
-Grate.size = [5000,5000];
-
-sphereAngularController = stage.builtin.controllers.PropertyController(Grate, 'phase', @(state)360*state.time/8);
+speed_cyclesPerSecond = 2;
+phaseController = stage.builtin.controllers.PropertyController(Grate, 'phase', @(state)360*state.time*speed_cyclesPerSecond);
 
 % Frame tracker stimulus:
 Tracker = turner.stimuli.FrameTracker();
 
 presentation.addStimulus(Grate);
-presentation.addController(sphereAngularController);
+presentation.addController(phaseController);
 presentation.addStimulus(Tracker);
 
 

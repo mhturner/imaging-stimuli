@@ -3,8 +3,7 @@ classdef FrameTracker < stage.core.Stimulus
     % specified color every even frame and a rectangle of black every odd frame.
     
     properties
-        position = [-0.85,0.85,-1]     % Center position on the canvas [x, y, z] (pixels)
-        size = [0.3, 0.3]         % Size [width, height] (pixels)
+        size = [0.3, 0.3]         % Size [width, height] (normalized gl coordinates)
         color = [1, 1, 1]       % Fill color on even frames as a single intensity value or [R, G, B] (0 to 1)
     end
 
@@ -12,6 +11,7 @@ classdef FrameTracker < stage.core.Stimulus
         vbo     % Vertex buffer object
         vao     % Vertex array object
         frame   % The current frame number starting at 0
+        position % Position set to be in lower right corner
     end
 
     methods
@@ -32,6 +32,10 @@ classdef FrameTracker < stage.core.Stimulus
             obj.vao.setAttribute(obj.vbo, 0, 4, GL.FLOAT, GL.FALSE, 4*4, 0);
 
             obj.frame = 0;
+            % adjust position based on aspect ratio to put tracker in lower
+            % right corner of screen
+            ar = canvas.window.size(2) / canvas.window.size(1);
+            obj.position = [-1+obj.size(1)/2, ar-obj.size(2)/2, -1];
         end
 
     end

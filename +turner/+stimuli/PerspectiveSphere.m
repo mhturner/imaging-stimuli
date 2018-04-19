@@ -4,13 +4,18 @@ classdef PerspectiveSphere < stage.core.Stimulus
     % this stimulus
     
     properties
-        position = [0, 0, 0]    % Center position in 3D space [x, y, z]
-        radius = 1              % Radius in x and z
-        height = 1              % Radius in y
-        angularPosition = 0     % degrees, horizontal
-        orientation = 0         % degrees, vertical
+        position = [0, 0, 0]            % Center position in 3D space [x, y, z]
+        radius = 1                      % Radius in x and z
+        height = 1                      % Radius in y
+        angularPosition = 0             % degrees, horizontal rotation
+        orientation = 0                 % degrees, vertical rotation
         color = [1, 1, 1]
         opacity = 1
+        phiLimits = [0.2*pi, 0.8*pi]    % radians, vertical extent of semi-sphere
+        thetaLimits = [0.5*pi, 1.5*pi]  % radians, horizontal extent of semi-sphere
+        
+    end
+    properties (Access = protected)
         texture
     end
     
@@ -44,26 +49,33 @@ classdef PerspectiveSphere < stage.core.Stimulus
             obj.vao = stage.core.gl.VertexArrayObject(canvas);
             obj.vao.setAttribute(obj.vbo, 0, 4, GL.FLOAT, GL.FALSE, 6*4, 0);
             obj.vao.setAttribute(obj.vbo, 1, 2, GL.FLOAT, GL.FALSE, 6*4, 4*4);
-
         end
         
-        function getVertexData(obj,shiftX,shiftY)
+        function getVertexData(obj,shiftX,shiftY,nCycles)
+            %shiftX and shiftY add to mapping of u,v textures
+            %nCycles tells the mapping how many cycles of the texture are
+            %painted on the semisphere. For non-repeating textures like
+            %images, nCycles should be 1
             if nargin < 2
                 shiftX = 0;
             end
             if nargin < 3
                 shiftY = 0;
             end
+            if nargin < 4
+                nCycles = 1;
+            end
+            
             % makes a sphere using a single, long triangle strip
             % TODO: parameterize these phi/theta start & ends based on
             % degree of visual field subtended by screen
             %phi = vertical angles (y). 0:pi gives full sphere
-            phiStart = 0.2*pi; phiEnd = 0.8*pi; phiRange = phiEnd - phiStart;
+            phiStart = obj.phiLimits(1); phiEnd = obj.phiLimits(2); phiRange = phiEnd - phiStart;
             phi = linspace(phiStart,phiEnd,obj.numSteps);
             
             %theta = horizontal angles  (x,z). 0:2pi gives full sphere
             %pi is straight down -z axis
-            thetaStart = 0.5*pi; thetaEnd = 1.5*pi; thetaRange = thetaEnd - thetaStart;
+            thetaStart = obj.thetaLimits(1); thetaEnd = obj.thetaLimits(2); thetaRange = thetaEnd - thetaStart;
             theta = linspace(thetaStart,thetaEnd,obj.numSteps);
 
             %Step along each angle (i.e. length of each triangle side)
@@ -82,32 +94,32 @@ classdef PerspectiveSphere < stage.core.Stimulus
             obj.vertexData(2:stride:end) = cos(phi); %y
             obj.vertexData(3:stride:end) = cos(theta) .* sin(phi); %z
             obj.vertexData(4:stride:end) = 1; %?
-            obj.vertexData(5:stride:end) = theta / thetaRange + shiftX; %texture U
-            obj.vertexData(6:stride:end) = phi / phiRange + shiftY; %texture V
+            obj.vertexData(5:stride:end) = nCycles * (theta / thetaRange) + shiftX; %texture U
+            obj.vertexData(6:stride:end) = nCycles * (phi / phiRange) + shiftY; %texture V
             
             %next vertex: step on vertical angle (phi)
             obj.vertexData(7:stride:end) = sin(theta) .* sin(phi+phiStep); %x
             obj.vertexData(8:stride:end) = cos(phi+phiStep); %y
             obj.vertexData(9:stride:end) = cos(theta) .* sin(phi+phiStep); %z
             obj.vertexData(10:stride:end) = 1;
-            obj.vertexData(11:stride:end) = theta / thetaRange + shiftX;
-            obj.vertexData(12:stride:end) = (phi + phiStep) / phiRange + shiftY;
+            obj.vertexData(11:stride:end) = nCycles * (theta / thetaRange) + shiftX;
+            obj.vertexData(12:stride:end) = nCycles * ((phi + phiStep) / phiRange) + shiftY;
 
             %next vertex: step on horizontal angle (theta)
             obj.vertexData(13:stride:end) = sin(theta+thetaStep) .* sin(phi); %x
             obj.vertexData(14:stride:end) = cos(phi); %y
             obj.vertexData(15:stride:end) = cos(theta+thetaStep) .* sin(phi); %z
             obj.vertexData(16:stride:end) = 1;
-            obj.vertexData(17:stride:end) = (theta+thetaStep) / thetaRange + shiftX;
-            obj.vertexData(18:stride:end) = phi / phiRange + shiftY;
+            obj.vertexData(17:stride:end) = nCycles * ((theta+thetaStep) / thetaRange) + shiftX;
+            obj.vertexData(18:stride:end) = nCycles + (phi / phiRange) + shiftY;
 
             %next vertex: step on theta & phi (diagonal)
             obj.vertexData(19:stride:end) = sin(theta+thetaStep) .* sin(phi+phiStep); %x
             obj.vertexData(20:stride:end) = cos(phi+phiStep); %y
             obj.vertexData(21:stride:end) = cos(theta+thetaStep) .* sin(phi+phiStep); %z
             obj.vertexData(22:stride:end) = 1;
-            obj.vertexData(23:stride:end) = (theta+thetaStep) / thetaRange + shiftX;
-            obj.vertexData(24:stride:end) = (phi+phiStep) / phiRange + shiftY;
+            obj.vertexData(23:stride:end) = nCycles * ((theta+thetaStep) / thetaRange) + shiftX;
+            obj.vertexData(24:stride:end) = nCycles * ((phi+phiStep) / phiRange) + shiftY;
         end
         
     end

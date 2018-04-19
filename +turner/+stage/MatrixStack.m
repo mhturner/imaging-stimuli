@@ -96,11 +96,11 @@ classdef MatrixStack < handle
             obj.stack(:,:,obj.depth) = obj.stack(:,:,obj.depth) * p;
         end
         
-        function flyPerspective(obj)
-            w = 9; h = 9;
-            pa = [-10, -10, 10]; % lower left
-            pb = [ 10, -10, 10]; % lower right
-            pc = [-10, 10, 10]; % upper left
+        function flyPerspective(obj,screenDim)
+            w = screenDim(1); h = screenDim(2);
+            pa = [-w/2, -h/2, w/2]; % lower left
+            pb = [ w/2, -h/2, w/2]; % lower right
+            pc = [-w/2, h/2, w/2]; % upper left
 
             % determine screen unit vectors
             vr = (pb - pa) ./ norm(pb - pa);
