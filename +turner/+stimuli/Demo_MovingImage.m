@@ -1,7 +1,7 @@
 presentation = stage.core.Presentation(5);
 windowSize = [800, 600];
 window = stage.core.Window(windowSize, false);
-canvas = turner.stage.Canvas(window, 'disableDwm', false);
+canvas = turner.stage.Canvas(window);
 
 %Set projection matrix
 projection = turner.stage.MatrixStack();
