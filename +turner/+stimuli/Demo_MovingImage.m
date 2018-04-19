@@ -16,7 +16,6 @@ Image = turner.stimuli.Image(butterflyImage);
     %Properties of sphere:
 Image.radius = 1;
 Image.height = 1;
-Image.contrast = 1;
 Image.position = [0 0 0];
 % Image.color = [0 0 1];
 Image.orientation = 0;

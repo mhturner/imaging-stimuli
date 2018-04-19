@@ -1,6 +1,5 @@
 classdef Image < turner.stimuli.PerspectiveSphere
     properties
-        contrast = 1            % Scale factor for color values (-1 to 1, negative values invert the grating)
         shiftX = 0              % Texture shift (scroll) on the x axes (degrees)
         shiftY = 0              % Texture shift (scroll) on the y axes (degrees)
         imageMatrix             % Image data matrix (M-by-N grayscale, M-by-N-by-3 truecolor, M-by-N-by-4 truecolor with alpha)
