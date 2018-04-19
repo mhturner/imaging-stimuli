@@ -20,7 +20,7 @@ Grate.spatialFreq = 1/10; %cpd
 % Grate.phiLimits = [0, pi];
 
 speed_cyclesPerSecond = 2;
-phaseController = stage.builtin.controllers.PropertyController(Grate, 'phase', @(state)360*state.time*speed_cyclesPerSecond);
+phaseController = stage.builtin.controllers.PropertyController(Grate, 'phase', @(state)520*state.time*speed_cyclesPerSecond);
 
 % Frame tracker stimulus:
 Tracker = turner.stimuli.FrameTracker();
