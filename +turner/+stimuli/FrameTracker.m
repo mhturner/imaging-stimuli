@@ -3,7 +3,7 @@ classdef FrameTracker < stage.core.Stimulus
     % specified color every even frame and a rectangle of black every odd frame.
     
     properties
-        size = [0.3, 0.3]         % Size [width, height] (normalized gl coordinates)
+        size = [0.25, 1]         % Size [width, height] (normalized gl coordinates)
         color = [1, 1, 1]       % Fill color on even frames as a single intensity value or [R, G, B] (0 to 1)
     end
 
