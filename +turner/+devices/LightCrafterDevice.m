@@ -27,7 +27,7 @@ classdef LightCrafterDevice < symphonyui.core.Device
             canvasSize = [trueCanvasSize(1) * 2, trueCanvasSize(2)];
             
             obj.stageClient.setCanvasProjectionIdentity();
-            obj.stageClient.setCanvasProjectionOrthographic(0, canvasSize(1), 0, canvasSize(2));
+            obj.stageClient.setCanvasProjectionFlyPerspective(canvasSize(1), canvasSize(2));
             
             obj.lightCrafter = LightCrafter4500(obj.stageClient.getMonitorRefreshRate());
             obj.lightCrafter.connect();
@@ -114,22 +114,14 @@ classdef LightCrafterDevice < symphonyui.core.Device
         function play(obj, presentation)
             canvasSize = obj.getCanvasSize();
             centerOffset = obj.getCenterOffset();
-            
-            background = stage.builtin.stimuli.Rectangle();
-            background.size = canvasSize;
-            background.position = canvasSize/2 - centerOffset;
-            background.color = presentation.backgroundColor;
-            presentation.setBackgroundColor(0);
-            presentation.insertStimulus(1, background);
-            
-            tracker = stage.builtin.stimuli.Rectangle();
-            tracker.size = [canvasSize(1) * 2/8, canvasSize(2)];
-            tracker.position = [canvasSize(1) - (canvasSize(1)/8), canvasSize(2)/2] - centerOffset;
-            presentation.addStimulus(tracker);
-            
-            trackerColor = stage.builtin.controllers.PropertyController(tracker, 'color', @(s)mod(s.frame, 2) && double(s.time + (1/s.frameRate) < presentation.duration));
-            presentation.addController(trackerColor);            
-            
+%             
+%             background = stage.builtin.stimuli.Rectangle();
+%             background.size = canvasSize;
+%             background.position = canvasSize/2 - centerOffset;
+%             background.color = presentation.backgroundColor;
+%             presentation.setBackgroundColor(0);
+%             presentation.insertStimulus(1, background);
+
             if obj.getPrerender()
                 player = stage.builtin.players.PrerenderedPlayer(presentation);
             else
