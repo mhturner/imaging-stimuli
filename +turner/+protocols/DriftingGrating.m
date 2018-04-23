@@ -1,9 +1,9 @@
 classdef DriftingGrating < io.github.stage_vss.protocols.StageProtocol
     
     properties
-        preTime = 1000                   % Leading duration (ms)
+        preTime = 1000                  % Leading duration (ms)
         stimTime = 5000                 % Duration (ms)
-        tailTime = 1000                  % Trailing duration (ms)
+        tailTime = 1000                 % Trailing duration (ms)
         spatialFreq = 0.1               % (c.p.d.)
         contrast = 0.9                  % Grating contrast
         backgroundIntensity = 0.5       % Background light intensity (0-1)
