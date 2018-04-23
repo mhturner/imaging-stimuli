@@ -1,10 +1,10 @@
 presentation = stage.core.Presentation(5);
 windowSize = [800, 600];
 window = stage.core.Window(windowSize, false);
-canvas = turner.stage.Canvas(window);
+canvas = stage.core.Canvas(window);
 
 %Set projection matrix
-projection = turner.stage.MatrixStack();
+projection = stage.core.gl.MatrixStack();
 projection.flyPerspective(windowSize);
 canvas.setProjection(projection); %set perspective 
 
