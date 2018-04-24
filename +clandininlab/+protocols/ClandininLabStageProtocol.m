@@ -13,7 +13,7 @@ classdef (Abstract) ClandininLabStageProtocol < symphonyui.core.Protocol
         function prepareEpoch(obj, epoch)
             prepareEpoch@symphonyui.core.Protocol(obj);
             
-            obj.waitingForHardwareToStart = false;
+            obj.waitingForHardwareToStart = true;
             epoch.shouldWaitForTrigger = false;
             
             frameMonitor = obj.rig.getDevices('Frame Monitor');

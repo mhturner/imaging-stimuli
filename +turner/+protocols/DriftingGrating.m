@@ -5,7 +5,7 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
         stimTime = 5000                 % Duration (ms)
         tailTime = 1000                 % Trailing duration (ms)
         spatialFrequency = 0.1          % (c.p.d.)
-        speed = 90                      % Degrees per second
+        speed = 30                      % Degrees per second
         contrast = 0.9                  % Grating contrast
         backgroundIntensity = 0.5       % Background light intensity (0-1)
         orientation = 0                 % Degrees
