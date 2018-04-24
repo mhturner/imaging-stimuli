@@ -1,34 +1,39 @@
 presentation = stage.core.Presentation(4);
-windowSize = [800, 600];
+windowSize = [912, 1140]./2;
 window = stage.core.Window(windowSize, false);
-canvas = turner.stage.Canvas(window);
+canvas = stage.core.Canvas(window);
 
 %Set projection matrix
-projection = turner.stage.MatrixStack();
+projection = stage.core.gl.MatrixStack();
 projection.flyPerspective(windowSize);
 canvas.setProjection(projection); %set perspective
 
 %checkerboard stimulus
  %board aspect ratio is in line with semisphere aspect ratio
-boardSize = [20, 40];
+nChecksY = 8;
+phiLimits = [0.25*pi, 0.75*pi];
+thetaLimits = [0.5*pi, 1.5*pi];
+ar = range(thetaLimits)/range(phiLimits);
+
+boardSize = [nChecksY, nChecksY * ar];
 backgroundIntensity = 0.5;
 noiseStdv = 0.3;
-noiseSeed = 1;
+noiseSeed = 2;
 noiseStream = RandStream('mt19937ar', 'Seed', noiseSeed);
 
 initMatrix = uint8(255.*(0.5 .* ones(boardSize)));
-board = turner.stimuli.Image(initMatrix);
+board = clandininlab.stimuli.Image(initMatrix);
 board.setMinFunction(GL.NEAREST); %don't interpolate to scale up board
 board.setMagFunction(GL.NEAREST);
-board.position = [0, 0, 0];
-% board.thetaLimits = [0.5*pi, 1.5*pi];
-% board.phiLimits = [0, pi];
+board.position = [0, 0, -2];
+board.phiLimits = phiLimits;
+board.thetaLimits = thetaLimits;
 
 checkerboardController = stage.builtin.controllers.PropertyController(board, 'imageMatrix',...
-        @(state)turner.stimuli.getNewCheckerboard(boardSize,backgroundIntensity,noiseStdv,noiseStream));
+        @(state)clandininlab.utilities.getNewCheckerboard(boardSize,backgroundIntensity,noiseStdv,noiseStream));
 
 % Frame tracker stimulus:
-Tracker = turner.stimuli.FrameTracker();
+Tracker = clandininlab.stimuli.FrameTracker();
 
 presentation.addStimulus(board);
 presentation.addController(checkerboardController);

@@ -117,11 +117,10 @@ classdef Image < clandininlab.stimuli.PerspectiveSphere
                 c = [c, obj.opacity];
             end
             
-            % STRIDE here is 4 * (obj.numSteps+1)*(obj.numSteps+2)
+            % STRIDE here is 4 * (obj.numSteps)*(obj.numSteps)
             %   4 vertices defined in each iteration above. Do that for
-            %   each phi (numSteps+1) and theta ((numSteps+2) because of
-            %   wrap-around)
-            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 4*(obj.numSteps+1)*(obj.numSteps+1), c, [], obj.texture);
+            %   each phi (numSteps) and theta (numSteps)
+            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 4*(obj.numSteps)*(obj.numSteps), c, [], obj.texture);
             
             modelView.pop();
         end

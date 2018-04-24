@@ -1,10 +1,10 @@
 presentation = stage.core.Presentation(5);
-windowSize = [800, 600];
+windowSize = [912, 1140]./2;
 window = stage.core.Window(windowSize, false);
-canvas = turner.stage.Canvas(window);
+canvas = stage.core.Canvas(window);
 
 %Set projection matrix
-projection = turner.stage.MatrixStack();
+projection = stage.core.gl.MatrixStack();
 projection.flyPerspective(windowSize);
 canvas.setProjection(projection); %set perspective
 
@@ -12,20 +12,16 @@ imagesDir = '~/Dropbox/ClandininLab/imaging-stimuli/resources/images/';
 butterflyImage = imread(fullfile(imagesDir, 'butterfly.jpg'));
 
 %Image stimulus:
-Image = turner.stimuli.Image(butterflyImage);
+Image = clandininlab.stimuli.Image(butterflyImage);
     %Properties of sphere:
 Image.radius = 1;
 Image.height = 1;
-Image.position = [0 0 0];
-% Image.color = [0 0 1];
+Image.position = [0 0 -1];
 Image.orientation = 0;
-% Image.thetaLimits = [0, 2*pi];
-% Image.phiLimits = [0, pi];
-
 shiftController = stage.builtin.controllers.PropertyController(Image, 'shiftX', @(state)90*state.time);
 
 % Frame tracker stimulus:
-Tracker = turner.stimuli.FrameTracker();
+Tracker = clandininlab.stimuli.FrameTracker();
 
 presentation.addStimulus(Image);
 presentation.addController(shiftController);

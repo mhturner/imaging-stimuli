@@ -12,8 +12,8 @@ canvas.setProjection(projection); %set perspective
 Grate = clandininlab.stimuli.Grating('square');
 
 Grate.contrast = 0.5;
-Grate.position = [0 0 -2];
-Grate.orientation = 0;
+Grate.position = [0 0 -1];
+Grate.orientation = 180;
 Grate.spatialFreq = 1/45; %cpd
 
 speed_degPerSecond = 90;

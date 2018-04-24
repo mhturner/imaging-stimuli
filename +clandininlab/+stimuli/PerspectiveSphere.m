@@ -5,8 +5,8 @@ classdef PerspectiveSphere < stage.core.Stimulus
     
     properties
         position = [0, 0, 0]            % Center position in 3D space [x, y, z]
-        radius = 1                      % Radius in x and z
-        height = 1                      % Radius in y
+        radius = 1                      % Semisphere radius in x and z
+        height = 1                      % Semisphere radius in y
         angularPosition = 0             % degrees, horizontal rotation
         orientation = 0                 % degrees, vertical rotation
         color = [1, 1, 1]
@@ -31,10 +31,10 @@ classdef PerspectiveSphere < stage.core.Stimulus
         function obj = PerspectiveSphere(numSteps)
             % Constructs a 3D sphere stimulus
             if nargin < 1
-                numSteps = 100; %must be even
+                numSteps = 101; %must be odd
             else
-                if mod(numSteps,2) %isodd
-                    error('numSteps must be even')
+                if ~mod(numSteps,2) %iseven
+                    error('numSteps must be odd')
                 end
             end
             obj.numSteps = numSteps;
@@ -67,26 +67,26 @@ classdef PerspectiveSphere < stage.core.Stimulus
             end
             
             % makes a sphere using a single, long triangle strip
-            % TODO: parameterize these phi/theta start & ends based on
-            % degree of visual field subtended by screen
             %phi = vertical angles (y). 0:pi gives full sphere
             phiStart = obj.phiLimits(1); phiEnd = obj.phiLimits(2); phiRange = phiEnd - phiStart;
             phi = linspace(phiStart,phiEnd,obj.numSteps);
+            phi = phi(1:end-1); %trim last to avoid wrap-around. Last step will take care of this
             
             %theta = horizontal angles  (x,z). 0:2pi gives full sphere
             %pi is straight down -z axis
             thetaStart = obj.thetaLimits(1); thetaEnd = obj.thetaLimits(2); thetaRange = thetaEnd - thetaStart;
             theta = linspace(thetaStart,thetaEnd,obj.numSteps);
+            theta = theta(1:end-1); %trim last
 
-            %Step along each angle (i.e. length of each triangle side)
+            %Step size along each angle (i.e. length of each triangle side)
             phiStep = mean(diff(phi));
             thetaStep = mean(diff(theta));
             
             %vertically: one horizontal strip at a time
-            phi = kron(phi,ones(1,obj.numSteps));
+            phi = kron(phi,ones(1,obj.numSteps-1));
             %horizontally: sweep right then left. Repeat for each pair of
             %strips
-            theta = repmat([theta, theta(end:-1:1)],1,obj.numSteps/2);
+            theta = repmat([theta, theta(end:-1:1)],1,(obj.numSteps-1)/2);
 
             stride = 24;
             obj.vertexData = zeros(1, size(phi,2) * 6 * 4);
