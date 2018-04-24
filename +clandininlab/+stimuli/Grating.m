@@ -1,9 +1,9 @@
-classdef Grating < turner.stimuli.PerspectiveSphere
+classdef Grating < clandininlab.stimuli.PerspectiveSphere
     %Grating texture to paint on perspective semi-sphere
     properties
         contrast = 1            % Scale factor for color values (-1 to 1, negative values invert the grating)
         phase = 0               % Phase offset (degrees)
-        spatialFreq = 0.05     % Spatial frequency (cycles per degree)
+        spatialFreq = 0.05      % Spatial frequency (cycles per degree)
     end
     properties (Access = private)
         profile                     % Luminance profile wave ('sine', 'square', or 'sawtooth')
@@ -29,7 +29,7 @@ classdef Grating < turner.stimuli.PerspectiveSphere
         end
        
         function init(obj, canvas)
-            init@turner.stimuli.PerspectiveSphere(obj, canvas);
+            init@clandininlab.stimuli.PerspectiveSphere(obj, canvas);
 
             obj.texture = stage.core.gl.TextureObject(canvas, 2);
             obj.texture.setWrapModeS(GL.REPEAT);

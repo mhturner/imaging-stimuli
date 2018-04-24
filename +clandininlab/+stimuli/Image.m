@@ -1,4 +1,4 @@
-classdef Image < turner.stimuli.PerspectiveSphere
+classdef Image < clandininlab.stimuli.PerspectiveSphere
     properties
         shiftX = 0              % Texture shift (scroll) on the x axes (degrees)
         shiftY = 0              % Texture shift (scroll) on the y axes (degrees)
@@ -51,7 +51,7 @@ classdef Image < turner.stimuli.PerspectiveSphere
         end
 
         function init(obj, canvas)
-            init@turner.stimuli.PerspectiveSphere(obj, canvas);
+            init@clandininlab.stimuli.PerspectiveSphere(obj, canvas);
 
             image = obj.imageMatrix;
             if size(image, 3) == 1
