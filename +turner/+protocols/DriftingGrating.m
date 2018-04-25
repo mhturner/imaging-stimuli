@@ -4,16 +4,17 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
         preTime = 1000                  % Leading duration (ms)
         stimTime = 5000                 % Duration (ms)
         tailTime = 1000                 % Trailing duration (ms)
+        gratingProfile = 'square'       % square, sine, or sawtooth grating in space
         spatialFrequency = 0.1          % (c.p.d.)
         speed = 30                      % Degrees per second
         contrast = 0.9                  % Grating contrast
         backgroundIntensity = 0.5       % Background light intensity (0-1)
-        orientation = 0                 % Degrees
+        orientation = 0                 % Degrees. + is clockwise
         numberOfAverages = uint16(5)    % Number of epochs
     end
     
     properties (Hidden)
-
+        gratingProfileType = symphonyui.core.PropertyType('char', 'row', {'square', 'sine', 'sawtooth'})
     end
     
     methods
@@ -36,37 +37,34 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
         end
         
         function p = createPresentation(obj)
+            % Presentation duration
             p = stage.core.Presentation((obj.preTime + obj.stimTime + obj.tailTime) * 1e-3);
+            % Set background intensity for presentation
+            p.setBackgroundColor(obj.backgroundIntensity);
             
             % Grating stimulus:
-            Grate = clandininlab.stimuli.Grating('square');
+            Grate = clandininlab.stimuli.Grating(obj.gratingProfile);
             Grate.contrast = obj.contrast;
             Grate.color = 2 * obj.backgroundIntensity;
             Grate.orientation = obj.orientation;
             Grate.spatialFreq = obj.spatialFrequency;
             p.addStimulus(Grate);
 
+            % Use a phase controller to make the grating drift
             thetaRange = rad2deg(Grate.thetaLimits(2) - Grate.thetaLimits(1));
-            nCycles = Grate.spatialFreq * thetaRange;
+            nCycles = Grate.spatialFreq * thetaRange; % how many times is the texture repeated across the surface
             speed_cps = nCycles * obj.speed/thetaRange; %cycles of texture per second
-            
             phaseController = stage.builtin.controllers.PropertyController(Grate, 'phase', @(state)360*state.time*speed_cps);
             p.addController(phaseController);
+            
+            % Use a visible controller to make the grating appear only
+            % during the stim time
             grateVisible = stage.builtin.controllers.PropertyController(Grate, 'visible', @(state)state.time >= obj.preTime * 1e-3 && state.time < (obj.preTime + obj.stimTime) * 1e-3);
             p.addController(grateVisible);
-
-            % Frame tracker stimulus:
-            Tracker = clandininlab.stimuli.FrameTracker();
-            p.addStimulus(Tracker);
         end
         
-        function prepareEpoch(obj, epoch)
+        function prepareEpoch(obj, ~)
             prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj);
-            
-%             device = obj.rig.getDevice(obj.amp);
-%             duration = (obj.preTime + obj.stimTime + obj.tailTime) / 1e3;
-%             epoch.addDirectCurrentStimulus(device, device.background, duration, obj.sampleRate);
-%             epoch.addResponse(device);
         end
 
         function tf = shouldContinuePreparingEpochs(obj)

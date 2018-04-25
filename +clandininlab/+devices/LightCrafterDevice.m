@@ -12,7 +12,6 @@ classdef LightCrafterDevice < symphonyui.core.Device
             ip = inputParser();
             ip.addParameter('host', 'localhost', @ischar);
             ip.addParameter('port', 5678, @isnumeric);
-            ip.addParameter('micronsPerPixel', @isnumeric);
             ip.parse(varargin{:});
             
             cobj = Symphony.Core.UnitConvertingExternalDevice(['LightCrafter Stage@' ip.Results.host], 'Texas Instruments', Symphony.Core.Measurement(0, symphonyui.core.Measurement.UNITLESS));
@@ -58,7 +57,6 @@ classdef LightCrafterDevice < symphonyui.core.Device
             obj.addConfigurationSetting('prerender', false, 'isReadOnly', true);
             obj.addConfigurationSetting('lightCrafterLedEnables',  [auto, red, green, blue], 'isReadOnly', true);
             obj.addConfigurationSetting('lightCrafterPatternRate', obj.lightCrafter.currentPatternRate(), 'isReadOnly', true);
-            obj.addConfigurationSetting('micronsPerPixel', ip.Results.micronsPerPixel, 'isReadOnly', true);
         end
         
         function close(obj)
@@ -75,8 +73,6 @@ classdef LightCrafterDevice < symphonyui.core.Device
         end
         
         function v = getConfigurationSetting(obj, name)
-            % TODO: This is a faster version of Device.getConfigurationSetting(). It should be moved to Device.
-            
             v = obj.tryCoreWithReturn(@()obj.cobj.Configuration.Item(name));
             v = obj.valueFromPropertyValue(convert(v));
         end
@@ -90,8 +86,6 @@ classdef LightCrafterDevice < symphonyui.core.Device
         end
         
         function setCenterOffset(obj, o)
-            delta = o - obj.getCenterOffset();
-            obj.stageClient.setCanvasProjectionTranslate(delta(1), delta(2), 0);
             obj.setReadOnlyConfigurationSetting('centerOffset', [o(1) o(2)]);
         end
         
@@ -112,15 +106,23 @@ classdef LightCrafterDevice < symphonyui.core.Device
         end
         
         function play(obj, presentation)
-            canvasSize = obj.getCanvasSize();
+            % set center offset on all user-defined stimuli
             centerOffset = obj.getCenterOffset();
-%             
-%             background = stage.builtin.stimuli.Rectangle();
-%             background.size = canvasSize;
-%             background.position = canvasSize/2 - centerOffset;
-%             background.color = presentation.backgroundColor;
+            for ss = 1:length(presentation.stimuli)
+                presentation.stimuli{ss}.azimuth = centerOffset(1);
+                presentation.stimuli{ss}.elevation = centerOffset(2);
+            end
+
+            % add background by making a uniform semisphere at the bottom
+            % level of the presentation:
+            background = clandininlab.stimuli.PerspectiveSphere();
+            background.color = presentation.backgroundColor;
 %             presentation.setBackgroundColor(0);
-%             presentation.insertStimulus(1, background);
+            presentation.insertStimulus(1, background);
+            
+            % add frame tracker stimulus to the top:
+            Tracker = clandininlab.stimuli.FrameTracker();
+            presentation.addStimulus(Tracker);
 
             if obj.getPrerender()
                 player = stage.builtin.players.PrerenderedPlayer(presentation);
@@ -188,23 +190,11 @@ classdef LightCrafterDevice < symphonyui.core.Device
             r = obj.lightCrafter.currentPatternRate();
         end
         
-        function p = um2pix(obj, um)
-            micronsPerPixel = obj.getConfigurationSetting('micronsPerPixel');
-            p = round(um / micronsPerPixel);
-        end
-        
-        function u = pix2um(obj, pix)
-            micronsPerPixel = obj.getConfigurationSetting('micronsPerPixel');
-            u = pix * micronsPerPixel;
-        end
-        
     end
     
 end
 
 function v = convert(dotNetValue)
-    % TODO: Remove when getConfigurationSetting() is removed from this class.
-
     v = dotNetValue;
     if ~isa(v, 'System.Object')
         return;

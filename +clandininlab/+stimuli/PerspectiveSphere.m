@@ -5,10 +5,10 @@ classdef PerspectiveSphere < stage.core.Stimulus
     
     properties
         position = [0, 0, 0]            % Center position in 3D space [x, y, z]
-        radius = 1                      % Semisphere radius in x and z
-        height = 1                      % Semisphere radius in y
-        angularPosition = 0             % degrees, horizontal rotation
-        orientation = 0                 % degrees, vertical rotation
+        radius = 1                      % Semisphere radius in x, y, and z
+        azimuth = 0                     % degrees, horizontal rotation. + is right
+        elevation = 0                   % degrees, vertical rotation. + is up
+        orientation = 0                 % degrees, roll rotation. + is clockwise
         color = [1, 1, 1]
         opacity = 1
         phiLimits = [0.2*pi, 0.8*pi]    % radians, vertical extent of semi-sphere

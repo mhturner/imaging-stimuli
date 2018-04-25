@@ -58,9 +58,10 @@ classdef Grating < clandininlab.stimuli.PerspectiveSphere
             modelView = obj.canvas.modelView;
             modelView.push();
             modelView.translate(obj.position(1), obj.position(2), obj.position(3));
-            modelView.rotate(obj.orientation, 0, 0, 1);
-            modelView.rotate(obj.angularPosition, 0, -1, 0);
-            modelView.scale(obj.radius, obj.height, obj.radius); %x,y,z
+            modelView.rotate(obj.orientation, 0, 0, -1);
+            modelView.rotate(obj.azimuth, 0, 1, 0);
+            modelView.rotate(obj.elevation, -1, 0, 0);
+            modelView.scale(obj.radius, obj.radius, obj.radius); %x,y,z
             
             c = obj.color;
             if length(c) == 1

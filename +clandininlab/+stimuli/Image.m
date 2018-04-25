@@ -1,7 +1,7 @@
 classdef Image < clandininlab.stimuli.PerspectiveSphere
     properties
-        shiftX = 0              % Texture shift (scroll) on the x axes (degrees)
-        shiftY = 0              % Texture shift (scroll) on the y axes (degrees)
+        shiftX = 0              % Texture shift (scroll) on the texture x axis (degrees on sphere [0,360])
+        shiftY = 0              % Texture shift (scroll) on the texture y axis (degrees on sphere [0,360])
         imageMatrix             % Image data matrix (M-by-N grayscale, M-by-N-by-3 truecolor, M-by-N-by-4 truecolor with alpha)
     end
     properties (Access = private)
@@ -106,9 +106,10 @@ classdef Image < clandininlab.stimuli.PerspectiveSphere
             modelView = obj.canvas.modelView;
             modelView.push();
             modelView.translate(obj.position(1), obj.position(2), obj.position(3));
-            modelView.rotate(obj.orientation, 0, 0, 1);
-            modelView.rotate(obj.angularPosition, 0, -1, 0);
-            modelView.scale(obj.radius, obj.height, obj.radius); %x,y,z
+            modelView.rotate(obj.orientation, 0, 0, -1);
+            modelView.rotate(obj.azimuth, 0, 1, 0);
+            modelView.rotate(obj.elevation, -1, 0, 0);
+            modelView.scale(obj.radius, obj.radius, obj.radius); %x,y,z
             
             c = obj.color;
             if length(c) == 1
@@ -129,10 +130,9 @@ classdef Image < clandininlab.stimuli.PerspectiveSphere
     methods (Access = private)
 
         function updateVertexBuffer(obj)
-            nCycles = 1; %wrap texture around entire semi-sphere
+            nCycles = 1; %wrap image around entire semi-sphere just once
             
-            %normalize shift by 360: 360 degrees is one full rev around
-            %a sphere
+            %Normalize ShiftX and Y (degrees of visual angle) by 360 to map to texture coordinates ([0,1])
             obj.getVertexData(obj.shiftX/360,obj.shiftY/360,nCycles);
             vertexData = obj.vertexData;
             
