@@ -1,4 +1,4 @@
-presentation = stage.core.Presentation(5);
+presentation = stage.core.Presentation(4);
 windowSize = [912, 1140]./2;
 window = stage.core.Window(windowSize, false);
 canvas = stage.core.Canvas(window);
@@ -15,18 +15,21 @@ butterflyImage = imread(fullfile(imagesDir, 'butterfly.jpg'));
 Image = clandininlab.stimuli.Image(butterflyImage);
     %Properties of sphere:
 Image.radius = 1;
-Image.height = 1;
-Image.position = [0 0 -1];
+Image.position = [0 0 0];
+Image.azimuth = 0;
+Image.elevation = 0;
 Image.orientation = 0;
-shiftController = stage.builtin.controllers.PropertyController(Image, 'shiftX', @(state)90*state.time);
-
-% Frame tracker stimulus:
-Tracker = clandininlab.stimuli.FrameTracker();
+Image.opacity = 0.5;
+Image.shiftY = 0;
+Image.thetaLimits = [0 2*pi];
+Image.phiLimits = [0 1*pi];
+Speed_degPerSecond = 0;
+shiftControllerY = stage.builtin.controllers.PropertyController(Image, 'shiftY', @(state)Speed_degPerSecond*state.time);
+shiftControllerX = stage.builtin.controllers.PropertyController(Image, 'shiftX', @(state)Speed_degPerSecond*state.time);
 
 presentation.addStimulus(Image);
-presentation.addController(shiftController);
-presentation.addStimulus(Tracker);
-
+presentation.addController(shiftControllerY);
+presentation.addController(shiftControllerX);
 
 presentation.play(canvas);
  
