@@ -1,7 +1,5 @@
-classdef PerspectiveSphere < stage.core.Stimulus
-    % A 3D sphere stimulus. Made out of a triangle strip.
-    % Other children classes must make any textures to be associated with
-    % this stimulus
+classdef Rectangle < stage.core.Stimulus
+    % A rectangle on the surface of a 3D semisphere. Made out of a triangle strip.
     
     properties
         position = [0, 0, 0]            % Center position in 3D space [x, y, z]
@@ -9,10 +7,10 @@ classdef PerspectiveSphere < stage.core.Stimulus
         azimuth = 0                     % degrees, horizontal rotation. + is right
         elevation = 0                   % degrees, vertical rotation. + is up
         orientation = 0                 % degrees, roll rotation. + is clockwise
+        width = 40                      % degrees
+        height = 40                     % degrees
         color = [1, 1, 1]
         opacity = 1
-        phiLimits = [0.2*pi, 0.8*pi]    % radians, vertical extent of semi-sphere
-        thetaLimits = [0.5*pi, 1.5*pi]  % radians, horizontal extent of semi-sphere
         
     end
     properties (Access = protected)
@@ -21,6 +19,7 @@ classdef PerspectiveSphere < stage.core.Stimulus
     
     properties (SetAccess = private)
         numSteps    % Number of steps to take along each angular direction for each triangle
+        mask    % Stimulus mask
         vbo     % Vertex buffer object
         vao     % Vertex array object
         vertexData
@@ -28,8 +27,8 @@ classdef PerspectiveSphere < stage.core.Stimulus
 
     methods
         
-        function obj = PerspectiveSphere(numSteps)
-            % Constructs a 3D sphere stimulus
+        function obj = Rectangle(numSteps)
+           % Constructs a rectangle painted on a sphere
             if nargin < 1
                 numSteps = 100; %must be even
             else
@@ -42,6 +41,10 @@ classdef PerspectiveSphere < stage.core.Stimulus
         
         function init(obj, canvas)
             init@stage.core.Stimulus(obj, canvas);
+            if ~isempty(obj.mask)
+                obj.mask.init(canvas);
+            end
+            
             obj.getVertexData();
             obj.vbo = stage.core.gl.VertexBufferObject(canvas, GL.ARRAY_BUFFER, single(obj.vertexData), GL.STATIC_DRAW);
 
@@ -50,37 +53,20 @@ classdef PerspectiveSphere < stage.core.Stimulus
             obj.vao.setAttribute(obj.vbo, 1, 2, GL.FLOAT, GL.FALSE, 6*4, 4*4);
         end
         
-        function getVertexData(obj,shiftX,shiftY,nCycles)
-            %shiftX and shiftY add to mapping of u,v textures
-            %nCycles tells the mapping how many cycles of the texture are
-            %painted on the semisphere. For non-repeating textures like
-            %images, nCycles should be 1
-            if nargin < 2
-                shiftX = 0;
-            end
-            if nargin < 3
-                shiftY = 0;
-            end
-            if nargin < 4
-                nCycles = 1;
-            end
-            
-            % makes a sphere using a single, long strip of  right
-            % triangles
-            
-            %  .2  .4    <-- phi2
-            %  |\  |
-            %  | \ | ...
-            %  |  \|  
-            %  .1  .3    <--- phi1
-            
-            %phi = vertical angles (y). 0:pi gives full sphere
-            phiStart = obj.phiLimits(1); phiEnd = obj.phiLimits(2); phiRange = phiEnd - phiStart;
+        function setMask(obj, mask)
+            % Assigns a mask to the stimulus.
+            obj.mask = mask;
+        end
+        
+        function getVertexData(obj)
+            % makes a rectangle using a single, long triangle strip
+            %phi = vertical angles (y).
+            phiStart = pi/2 - deg2rad(obj.height)/2; phiEnd = pi/2 + deg2rad(obj.height)/2; phiRange = deg2rad(obj.height);
             phi = linspace(phiStart,phiEnd,obj.numSteps);
             
-            %theta = horizontal angles  (x,z). 0:2pi gives full sphere
+            %theta = horizontal angles  (x,z).
             %pi is straight down -z axis
-            thetaStart = obj.thetaLimits(1); thetaEnd = obj.thetaLimits(2); thetaRange = thetaEnd - thetaStart;
+            thetaStart = pi - deg2rad(obj.width)/2; thetaEnd = pi + deg2rad(obj.width)/2; thetaRange = deg2rad(obj.width);
             theta = linspace(thetaStart,thetaEnd,obj.numSteps);
 
             %Step size along each angle (i.e. length of each triangle side)
@@ -98,16 +84,16 @@ classdef PerspectiveSphere < stage.core.Stimulus
             obj.vertexData(2:stride:end) = cos(phi); %y
             obj.vertexData(3:stride:end) = cos(theta) .* sin(phi); %z
             obj.vertexData(4:stride:end) = 1; %?
-            obj.vertexData(5:stride:end) = nCycles * ((theta-thetaStart) / thetaRange) + shiftX; %texture U
-            obj.vertexData(6:stride:end) = nCycles * ((phi-phiStart)/ phiRange) + shiftY; %texture V
+            obj.vertexData(5:stride:end) = ((theta-thetaStart) / thetaRange); %mask U
+            obj.vertexData(6:stride:end) = ((phi-phiStart)/ phiRange); %mask V
             
             %next vertex: step on vertical angle (phi)
             obj.vertexData(7:stride:end) = sin(theta) .* sin(phi+phiStep); %x
             obj.vertexData(8:stride:end) = cos(phi+phiStep); %y
             obj.vertexData(9:stride:end) = cos(theta) .* sin(phi+phiStep); %z
             obj.vertexData(10:stride:end) = 1;
-            obj.vertexData(11:stride:end) = nCycles * ((theta-thetaStart) / thetaRange) + shiftX;
-            obj.vertexData(12:stride:end) = nCycles * (((phi-phiStart) + phiStep) / phiRange) + shiftY;
+            obj.vertexData(11:stride:end) = ((theta-thetaStart) / thetaRange); %mask U
+            obj.vertexData(12:stride:end) = (((phi-phiStart) + phiStep) / phiRange); %mask V
         end
         
     end
@@ -132,11 +118,10 @@ classdef PerspectiveSphere < stage.core.Stimulus
             % STRIDE here is 2 * (obj.numSteps)*(obj.numSteps)
             %   2 vertices defined in each iteration above. Do that for
             %   each phi (numSteps) and theta (numSteps)
-            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 2*(obj.numSteps)*(obj.numSteps), c, [], obj.texture);
+            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 2*(obj.numSteps)*(obj.numSteps), c, obj.mask, []);
             
             modelView.pop();
         end
     end
-    
     
 end

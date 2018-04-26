@@ -103,27 +103,7 @@ classdef Image < clandininlab.stimuli.PerspectiveSphere
                 obj.updateTexture();
             end
             
-            modelView = obj.canvas.modelView;
-            modelView.push();
-            modelView.translate(obj.position(1), obj.position(2), obj.position(3));
-            modelView.rotate(obj.orientation, 0, 0, -1);
-            modelView.rotate(obj.azimuth, 0, 1, 0);
-            modelView.rotate(obj.elevation, -1, 0, 0);
-            modelView.scale(obj.radius, obj.radius, obj.radius); %x,y,z
-            
-            c = obj.color;
-            if length(c) == 1
-                c = [c, c, c, obj.opacity];
-            elseif length(c) == 3
-                c = [c, obj.opacity];
-            end
-            
-            % STRIDE here is 4 * (obj.numSteps)*(obj.numSteps)
-            %   4 vertices defined in each iteration above. Do that for
-            %   each phi (numSteps) and theta (numSteps)
-            obj.canvas.drawArray(obj.vao, GL.TRIANGLE_STRIP, 0, 4*(obj.numSteps)*(obj.numSteps), c, [], obj.texture);
-            
-            modelView.pop();
+            performDraw@clandininlab.stimuli.PerspectiveSphere(obj);
         end
     end
     
