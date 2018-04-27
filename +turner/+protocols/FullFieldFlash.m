@@ -35,6 +35,9 @@ classdef FullFieldFlash < clandininlab.protocols.ClandininLabStageProtocol
         function p = createPresentation(obj)
             p = stage.core.Presentation((obj.preTime + obj.stimTime + obj.tailTime) * 1e-3);
             
+            % Set background intensity for presentation
+            p.setBackgroundColor(obj.backgroundIntensity);
+            
             % Uniform semisphere stimulus:
             Sphere = clandininlab.stimuli.PerspectiveSphere;
             Sphere.color = obj.intensity;

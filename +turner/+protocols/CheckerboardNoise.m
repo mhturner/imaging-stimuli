@@ -37,10 +37,6 @@ classdef CheckerboardNoise < clandininlab.protocols.ClandininLabStageProtocol
         
         function prepareRun(obj)
             prepareRun@clandininlab.protocols.ClandininLabStageProtocol(obj);
-            
-            %get number of stixels/checkers in board:
-            obj.nChecksX = ceil(rad2deg(range(thetaLimits)) / obj.stixelSize);
-            obj.nChecksY = ceil(rad2deg(range(phiLimits)) / obj.stixelSize);
         end
         
         function p = createPresentation(obj)
@@ -52,10 +48,13 @@ classdef CheckerboardNoise < clandininlab.protocols.ClandininLabStageProtocol
             % Checkerboard stimulus:
             initMatrix = uint8(255.*(obj.backgroundIntensity .* ones(obj.numChecksY,obj.numChecksX)));
             Board = clandininlab.stimuli.Image(initMatrix);
+            %get number of stixels/checkers in board:
+            obj.numChecksX = ceil(rad2deg(range(Board.thetaLimits)) / obj.stixelSize);
+            obj.numChecksY = ceil(rad2deg(range(Board.phiLimits)) / obj.stixelSize);
             %resize semisphere so aspect ratio of semisphere matches that
             %of board
-            newThetaRange = deg2rad(obj.stixelSize * obj.nChecksX);
-            newPhiRange = deg2rad(obj.stixelSize * obj.nChecksy);
+            newThetaRange = deg2rad(obj.stixelSize * obj.numChecksX);
+            newPhiRange = deg2rad(obj.stixelSize * obj.numChecksY);
             Board.thetaLimits = mean(Board.thetaLimits) + [-newThetaRange/2 newThetaRange/2];
             Board.phiLimits = mean(Board.phiLimits) + [-newPhiRange/2 newPhiRange/2];
             Board.setMinFunction(GL.NEAREST); %don't interpolate to scale up board
@@ -63,7 +62,7 @@ classdef CheckerboardNoise < clandininlab.protocols.ClandininLabStageProtocol
             p.addStimulus(Board);
             
             preFrames = round(60 * (obj.preTime/1e3)); %TO DO: generalize this for different frame rates
-            checkerboardController = stage.builtin.controllers.PropertyController(board, 'imageMatrix',...
+            checkerboardController = stage.builtin.controllers.PropertyController(Board, 'imageMatrix',...
                 @(state)getNewCheckerboard(obj, state.frame - preFrames));
             p.addController(checkerboardController);
             function i = getNewCheckerboard(obj, frame)
@@ -91,7 +90,7 @@ classdef CheckerboardNoise < clandininlab.protocols.ClandininLabStageProtocol
             p.addController(boardVisible);
         end
         
-        function prepareEpoch(obj, ~)
+        function prepareEpoch(obj, epoch)
             prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj);
             % Determine seed values.
             if obj.useRandomSeed

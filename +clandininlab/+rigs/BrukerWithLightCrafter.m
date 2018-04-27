@@ -14,7 +14,7 @@ classdef BrukerWithLightCrafter < symphonyui.core.descriptions.RigDescription
             
             daq = obj.daqController;
             
-            lightCrafter = clandininlab.devices.LightCrafterDevice('micronsPerPixel', 1.0);
+            lightCrafter = clandininlab.devices.LightCrafterDevice();
             lightCrafter.bindStream(daq.getStream('doport1'));
             daq.getStream('doport1').setBitPosition(lightCrafter, 15);
             
