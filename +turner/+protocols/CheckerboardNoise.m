@@ -91,7 +91,7 @@ classdef CheckerboardNoise < clandininlab.protocols.ClandininLabStageProtocol
         end
         
         function prepareEpoch(obj, epoch)
-            prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj);
+            prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj, epoch);
             % Determine seed values.
             if obj.useRandomSeed
                 obj.noiseSeed = RandStream.shuffleSeed;

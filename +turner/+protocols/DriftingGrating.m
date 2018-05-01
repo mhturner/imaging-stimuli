@@ -63,8 +63,8 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
             p.addController(grateVisible);
         end
         
-        function prepareEpoch(obj, ~)
-            prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj);
+        function prepareEpoch(obj, epoch)
+            prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj, epoch);
         end
 
         function tf = shouldContinuePreparingEpochs(obj)

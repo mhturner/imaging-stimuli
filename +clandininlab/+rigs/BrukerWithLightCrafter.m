@@ -8,12 +8,9 @@ classdef BrukerWithLightCrafter < symphonyui.core.descriptions.RigDescription
             import symphonyui.core.*;
             import edu.washington.*;
 
-            
             daq = NiSimulationDaqController();
             obj.daqController = daq;
-            
-            daq = obj.daqController;
-            
+
             lightCrafter = clandininlab.devices.LightCrafterDevice();
             lightCrafter.bindStream(daq.getStream('doport1'));
             daq.getStream('doport1').setBitPosition(lightCrafter, 15);

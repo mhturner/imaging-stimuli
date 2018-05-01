@@ -47,8 +47,8 @@ classdef FullFieldFlash < clandininlab.protocols.ClandininLabStageProtocol
             p.addController(sphereVisible);
         end
         
-        function prepareEpoch(obj, ~)
-            prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj);
+        function prepareEpoch(obj, epoch)
+            prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj, epoch);
         end
 
         function tf = shouldContinuePreparingEpochs(obj)
