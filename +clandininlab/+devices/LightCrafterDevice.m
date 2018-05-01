@@ -31,7 +31,7 @@ classdef LightCrafterDevice < symphonyui.core.Device
             obj.lightCrafter = LightCrafter4500(obj.stageClient.getMonitorRefreshRate());
             obj.lightCrafter.connect();
             obj.lightCrafter.setMode('pattern');
-            obj.lightCrafter.setLedEnables(true, false, false, false);
+            obj.lightCrafter.setLedEnables(false, false, false, true);
             [auto, red, green, blue] = obj.lightCrafter.getLedEnables();
             
             refreshRate = obj.stageClient.getMonitorRefreshRate();
@@ -117,12 +117,13 @@ classdef LightCrafterDevice < symphonyui.core.Device
             % level of the presentation:
             background = clandininlab.stimuli.PerspectiveSphere();
             background.color = presentation.backgroundColor;
-%             presentation.setBackgroundColor(0);
             presentation.insertStimulus(1, background);
             
             % add frame tracker stimulus to the top:
             Tracker = clandininlab.stimuli.FrameTracker();
             presentation.addStimulus(Tracker);
+            trackerColor = stage.builtin.controllers.PropertyController(Tracker, 'color', @(s)mod(s.frame, 2) && double(s.time + (1/s.frameRate) < presentation.duration));
+            presentation.addController(trackerColor);            
 
             if obj.getPrerender()
                 player = stage.builtin.players.PrerenderedPlayer(presentation);
@@ -131,6 +132,13 @@ classdef LightCrafterDevice < symphonyui.core.Device
             end
             player.setCompositor(stage.builtin.compositors.PatternCompositor());
             obj.stageClient.play(player);
+            
+            % Initialize NIDAQ USB
+            s = daq.createSession('ni');
+            % Send START Trigger Through NIDAQ to Bruker
+            addCounterOutputChannel(s,'Dev1', 0,'PulseGeneration');
+            s.startForeground();
+            release(s);
         end
         
         function replay(obj)
