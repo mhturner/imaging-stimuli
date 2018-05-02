@@ -16,6 +16,14 @@ classdef (Abstract) ClandininLabStageProtocol < symphonyui.core.Protocol
             obj.waitingForHardwareToStart = true;
             epoch.shouldWaitForTrigger = false;
             
+            %scan trigger stuff:
+            triggers = obj.rig.getDevices('scanTrigger');
+            scanNumber = triggers{1}.scanNumber;
+            epoch.addParameter('scanNumber', scanNumber);
+            disp(scanNumber)
+            %advance the scan count:
+            triggers{1}.scanNumber = triggers{1}.scanNumber + 1; 
+            
 %             frameMonitor = obj.rig.getDevices('Frame Monitor');
 %             if ~isempty(frameMonitor)
 %                 epoch.addResponse(frameMonitor{1});
