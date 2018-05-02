@@ -1,16 +1,16 @@
 classdef CheckerboardNoise < clandininlab.protocols.ClandininLabStageProtocol
     
     properties
-        preTime = 1000                  % Leading duration (ms)
-        stimTime = 5000                 % Duration (ms)
-        tailTime = 1000                 % Trailing duration (ms)
-        stixelSize = 5                  % deg. visual angle
+        preTime = 2000                  % Leading duration (ms)
+        stimTime = 20000                 % Duration (ms)
+        tailTime = 2000                 % Trailing duration (ms)
+        stixelSize = 10                  % deg. visual angle
         binaryNoise = true              % binary checkers - overrides noiseStdv
         noiseStdv = 0.3                 % contrast, as fraction of mean
-        frameDwell = 1                  % Frames per noise update
+        frameDwell = 2                  % Frames per noise update
         useRandomSeed = true            % false = repeated noise trajectory (seed 0)   
         backgroundIntensity = 0.5       % Background light intensity (0-1)
-        numberOfAverages = uint16(5)    % Number of epochs
+        numberOfAverages = uint16(10)    % Number of epochs
     end
     
     properties (Hidden)

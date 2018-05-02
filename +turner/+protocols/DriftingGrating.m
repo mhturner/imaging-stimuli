@@ -1,20 +1,23 @@
 classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
     
     properties
-        preTime = 1000                  % Leading duration (ms)
-        stimTime = 5000                 % Duration (ms)
-        tailTime = 1000                 % Trailing duration (ms)
+        preTime = 2000                  % Leading duration (ms)
+        stimTime = 10000                 % Duration (ms)
+        tailTime = 2000                 % Trailing duration (ms)
         gratingProfile = 'square'       % square, sine, or sawtooth grating in space
         spatialFrequency = 0.1          % (c.p.d.)
         speed = 30                      % Degrees per second
         contrast = 0.9                  % Grating contrast
         backgroundIntensity = 0.5       % Background light intensity (0-1)
-        orientation = 0                 % Degrees. + is clockwise
-        numberOfAverages = uint16(5)    % Number of epochs
+        orientation = 0:45:315          % Degrees. + is clockwise
+        randomizeOrder = false
+        numberOfAverages = uint16(40)    % Number of epochs
     end
     
     properties (Hidden)
         gratingProfileType = symphonyui.core.PropertyType('char', 'row', {'square', 'sine', 'sawtooth'})
+        orientationSequence
+        currentOrientation
     end
     
     methods
@@ -34,6 +37,9 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
         
         function prepareRun(obj)
             prepareRun@clandininlab.protocols.ClandininLabStageProtocol(obj);
+            
+            % Create orientation sequence.
+            obj.orientationSequence = obj.orientation;
         end
         
         function p = createPresentation(obj)
@@ -46,7 +52,7 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
             Grate = clandininlab.stimuli.Grating(obj.gratingProfile);
             Grate.contrast = obj.contrast;
             Grate.color = 2 * obj.backgroundIntensity;
-            Grate.orientation = obj.orientation;
+            Grate.orientation = obj.currentOrientation;
             Grate.spatialFreq = obj.spatialFrequency;
             p.addStimulus(Grate);
 
@@ -65,6 +71,14 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
         
         function prepareEpoch(obj, epoch)
             prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj, epoch);
+            
+            index = mod(obj.numEpochsCompleted, length(obj.orientationSequence)) + 1;
+            % Randomize the orientation sequence order at the beginning of each sequence.
+            if index == 1 && obj.randomizeOrder
+                obj.orientationSequence = randsample(obj.orientationSequence, length(obj.orientationSequence));
+            end
+            obj.currentOrientation = obj.orientationSequence(index);
+            epoch.addParameter('currentOrientation', obj.currentOrientation);
         end
 
         function tf = shouldContinuePreparingEpochs(obj)
