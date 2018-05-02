@@ -11,7 +11,7 @@ classdef PerspectiveSphere < stage.core.Stimulus
         orientation = 0                 % degrees, roll rotation. + is clockwise
         color = [1, 1, 1]
         opacity = 1
-        phiLimits = [0.2*pi, 0.8*pi]    % radians, vertical extent of semi-sphere
+        phiLimits = [0*pi, 1*pi]    % radians, vertical extent of semi-sphere
         thetaLimits = [0.5*pi, 1.5*pi]  % radians, horizontal extent of semi-sphere
         
     end

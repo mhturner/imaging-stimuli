@@ -3,7 +3,7 @@ classdef FrameTracker < stage.core.Stimulus
     % specified color every even frame and a rectangle of black every odd frame.
     
     properties
-        size = [2, 10]         % Size [width, height] (normalized gl coordinates)
+        size = [1.8, 4]         % Size [width, height] (cm)
         color = [1, 1, 1]       % Fill color on even frames as a single intensity value or [R, G, B] (0 to 1)
     end
 
@@ -35,7 +35,7 @@ classdef FrameTracker < stage.core.Stimulus
             % adjust position based on aspect ratio to put tracker in lower
             % right corner of screen
             % TODO: make this adjustable between rigs...
-            w = 13.5; h = 16.87; %cm of image at projection plane
+            w = 14.2; h = 9;
             zDistToScreen = 5.36; %cm
             obj.position = [w/2 - obj.size(1)/2, -h + obj.size(2)/2, -zDistToScreen];
 
