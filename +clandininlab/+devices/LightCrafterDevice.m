@@ -132,13 +132,6 @@ classdef LightCrafterDevice < symphonyui.core.Device
             end
             player.setCompositor(stage.builtin.compositors.PatternCompositor());
             obj.stageClient.play(player);
-            
-            % Initialize NIDAQ USB
-            s = daq.createSession('ni');
-            % Send START Trigger Through NIDAQ to Bruker
-            addCounterOutputChannel(s,'Dev1', 0,'PulseGeneration');
-            s.startForeground();
-            release(s);
         end
         
         function replay(obj)

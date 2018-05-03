@@ -20,7 +20,6 @@ classdef (Abstract) ClandininLabStageProtocol < symphonyui.core.Protocol
             triggers = obj.rig.getDevices('scanTrigger');
             scanNumber = triggers{1}.scanNumber;
             epoch.addParameter('scanNumber', scanNumber);
-            disp(scanNumber)
             %advance the scan count:
             triggers{1}.scanNumber = triggers{1}.scanNumber + 1; 
             
@@ -35,7 +34,14 @@ classdef (Abstract) ClandininLabStageProtocol < symphonyui.core.Protocol
             
             if obj.waitingForHardwareToStart
                 obj.waitingForHardwareToStart = false;
+                
                 obj.rig.getDevice('Stage').play(obj.createPresentation());
+                % Initialize NIDAQ USB
+                s = daq.createSession('ni');
+                % Send START Trigger Through NIDAQ to Bruker
+                addCounterOutputChannel(s,'Dev1', 0,'PulseGeneration');
+                s.startForeground();
+                release(s);
             end
         end
         
