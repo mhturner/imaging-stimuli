@@ -21,9 +21,6 @@ classdef BrukerWithLightCrafter < symphonyui.core.descriptions.RigDescription
             scanTrigger.bindStream(daq.getStream('doport1'));
             daq.getStream('doport1').setBitPosition(scanTrigger, 10);
             obj.addDevice(scanTrigger);
-            
-%             frameMonitor = UnitConvertingDevice('Frame Monitor', 'V').bindStream(daq.getStream('ai7'));
-%             obj.addDevice(frameMonitor);
         end
         
     end
