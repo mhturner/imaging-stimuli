@@ -2,6 +2,7 @@ classdef ScanCount < symphonyui.ui.Module
     
     properties (Access = private)
         toolbar
+        settings
         updateButton
         scanDevice
         deviceListener
@@ -9,6 +10,10 @@ classdef ScanCount < symphonyui.ui.Module
     end
     
     methods
+        
+        function obj = ScanCount()
+            obj.settings = clandininlab.modules.settings.ScanCountSettings();
+        end
         
         function createUi(obj, figureHandle)
             import appbox.*;
@@ -41,6 +46,20 @@ classdef ScanCount < symphonyui.ui.Module
                 obj.scanDevice.scanNumber, ...
                 'DisplayName', 'Scan number:');
             set(obj.deviceGrid, 'Properties', field);
+            
+            try
+                obj.loadSettings();
+            catch x
+                obj.log.debug(['Failed to load settings: ' x.message], x);
+            end
+        end
+        
+        function willStop(obj)
+            try
+                obj.saveSettings();
+            catch x
+                obj.log.debug(['Failed to save settings: ' x.message], x);
+            end
         end
         
         function bind(obj)
@@ -64,6 +83,19 @@ classdef ScanCount < symphonyui.ui.Module
         
         function onSetScanNumber(obj, ~, event)
             obj.scanDevice.scanNumber = event.Property.Value;
+        end
+        
+        function loadSettings(obj)
+            if ~isempty(obj.settings.viewPosition)
+                p1 = obj.view.position;
+                p2 = obj.settings.viewPosition;
+                obj.view.position = [p2(1) p2(2) p1(3) p1(4)];
+            end
+        end
+
+        function saveSettings(obj)
+            obj.settings.viewPosition = obj.view.position;
+            obj.settings.save();
         end
         
     end
