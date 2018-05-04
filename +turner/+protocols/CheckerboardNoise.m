@@ -49,8 +49,8 @@ classdef CheckerboardNoise < clandininlab.protocols.ClandininLabStageProtocol
             initMatrix = uint8(255.*(obj.backgroundIntensity .* ones(obj.numChecksY,obj.numChecksX)));
             Board = clandininlab.stimuli.Image(initMatrix);
             %get number of stixels/checkers in board:
-            obj.numChecksX = ceil(rad2deg(range(Board.thetaLimits)) / obj.stixelSize);
-            obj.numChecksY = ceil(rad2deg(range(Board.phiLimits)) / obj.stixelSize);
+            obj.numChecksX = ceil(rad2deg((Board.thetaLimits(2) - Board.thetaLimits(1))) / obj.stixelSize);
+            obj.numChecksY = ceil(rad2deg((Board.phiLimits(2) - Board.phiLimits(1))) / obj.stixelSize);
             %resize semisphere so aspect ratio of semisphere matches that
             %of board
             newThetaRange = deg2rad(obj.stixelSize * obj.numChecksX);
