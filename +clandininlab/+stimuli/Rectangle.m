@@ -4,17 +4,16 @@ classdef Rectangle < stage.core.Stimulus
     properties
         position = [0, 0, 0]            % Center position in 3D space [x, y, z]
         radius = 1                      % Semisphere radius in x, y, and z
-        azimuth = 0                     % degrees, horizontal rotation. + is right
-        elevation = 0                   % degrees, vertical rotation. + is up
-        orientation = 0                 % degrees, roll rotation. + is clockwise
         width = 40                      % degrees
         height = 40                     % degrees
         color = [1, 1, 1]
-        opacity = 1
-        
+        opacity = 1      
+        azimuth = 0                     % degrees, horizontal rotation. + is right
+        elevation = 0                   % degrees, vertical rotation. + is up
+        rectOrientation = 0             % degrees, + is clockwise
     end
     properties (Access = protected)
-        texture
+        
     end
     
     properties (SetAccess = private)
@@ -30,7 +29,7 @@ classdef Rectangle < stage.core.Stimulus
         function obj = Rectangle(numSteps)
            % Constructs a rectangle painted on a sphere
             if nargin < 1
-                numSteps = 100; %must be even
+                numSteps = 200; %must be even
             else
                 if mod(numSteps,2) %isodd
                     error('numSteps must be even')
@@ -44,7 +43,6 @@ classdef Rectangle < stage.core.Stimulus
             if ~isempty(obj.mask)
                 obj.mask.init(canvas);
             end
-            
             obj.getVertexData();
             obj.vbo = stage.core.gl.VertexBufferObject(canvas, GL.ARRAY_BUFFER, single(obj.vertexData), GL.STATIC_DRAW);
 
@@ -59,41 +57,45 @@ classdef Rectangle < stage.core.Stimulus
         end
         
         function getVertexData(obj)
-            % makes a rectangle using a single, long triangle strip
-            %phi = vertical angles (y).
-            phiStart = pi/2 - deg2rad(obj.height)/2; phiEnd = pi/2 + deg2rad(obj.height)/2; phiRange = deg2rad(obj.height);
-            phi = linspace(phiStart,phiEnd,obj.numSteps);
+            thetaStart = -obj.width/2; thetaEnd = obj.width/2;
+            theta = linspace(thetaStart,thetaEnd, obj.numSteps);
+            phiStart = -obj.height/2; phiEnd = obj.height/2;
+            phi = linspace(phiStart, phiEnd, obj.numSteps);
             
-            %theta = horizontal angles  (x,z).
-            %pi is straight down -z axis
-            thetaStart = pi - deg2rad(obj.width)/2; thetaEnd = pi + deg2rad(obj.width)/2; thetaRange = deg2rad(obj.width);
-            theta = linspace(thetaStart,thetaEnd,obj.numSteps);
-
             %Step size along each angle (i.e. length of each triangle side)
             phiStep = mean(diff(phi));
             
             %vertically: one horizontal strip at a time
-            phi = kron(phi,ones(1,obj.numSteps));
+            phi = kron(phi,ones(1,obj.numSteps))';
             %horizontally: sweep right then left. Repeat for each pair of
             %strips
-            theta = repmat([theta, theta(end:-1:1)],1,(obj.numSteps)/2);
-
-            stride = 12;
-            obj.vertexData = zeros(1, size(phi,2) * 6 * 2);
-            obj.vertexData(1:stride:end) = sin(theta) .* sin(phi); %x
-            obj.vertexData(2:stride:end) = cos(phi); %y
-            obj.vertexData(3:stride:end) = cos(theta) .* sin(phi); %z
-            obj.vertexData(4:stride:end) = 1; %?
-            obj.vertexData(5:stride:end) = ((theta-thetaStart) / thetaRange); %mask U
-            obj.vertexData(6:stride:end) = ((phi-phiStart)/ phiRange); %mask V
+            theta = repmat([theta, theta(end:-1:1)],1,(obj.numSteps)/2)';
             
-            %next vertex: step on vertical angle (phi)
-            obj.vertexData(7:stride:end) = sin(theta) .* sin(phi+phiStep); %x
-            obj.vertexData(8:stride:end) = cos(phi+phiStep); %y
-            obj.vertexData(9:stride:end) = cos(theta) .* sin(phi+phiStep); %z
-            obj.vertexData(10:stride:end) = 1;
-            obj.vertexData(11:stride:end) = ((theta-thetaStart) / thetaRange); %mask U
-            obj.vertexData(12:stride:end) = (((phi-phiStart) + phiStep) / phiRange); %mask V
+            %coords in theta, phi
+            coords = zeros(size(phi,1) * 2, 2);
+            coords(1:2:end,:) = [theta, phi];
+            coords(2:2:end,:) = [theta, phi + phiStep];
+            
+            %rotate theta, phi coords according to bar orienation
+            R = [cosd(obj.rectOrientation) -sind(obj.rectOrientation);...
+                 sind(obj.rectOrientation) cosd(obj.rectOrientation)];
+            C = coords * R;
+            %Shift center of rectangle in theta, phi space
+            C(:,1) = C(:,1) + (180); %flip it around so it's in the center of the sphere down the -z axis
+            C(:,2) = C(:,2) + (90);
+            %Convert to rad
+            C = deg2rad(C);
+            
+            %map out vertices and convery from theta/phi 2 space to surface
+            %of sphere (3 space)
+            stride = 6;
+            obj.vertexData = zeros(1, size(phi,1) * 6 * 2);
+            obj.vertexData(1:stride:end) = sin(C(:,1)) .* sin(C(:,2)); % x
+            obj.vertexData(2:stride:end) = cos(C(:,2)); % y
+            obj.vertexData(3:stride:end) = cos(C(:,1)) .* sin(C(:,2)); % z
+            obj.vertexData(4:stride:end) = 1;
+            obj.vertexData(5:stride:end) = (reshape([theta,theta]',1,size(theta,1)*2)-thetaStart) / obj.width; %mask U
+            obj.vertexData(6:stride:end) = (reshape([phi,phi+phiStep]',1,size(theta,1)*2)-phiStart)/ obj.height; %mask V
         end
         
     end
@@ -103,8 +105,7 @@ classdef Rectangle < stage.core.Stimulus
             modelView = obj.canvas.modelView;
             modelView.push();
             modelView.translate(obj.position(1), obj.position(2), obj.position(3));
-            modelView.rotate(obj.orientation, 0, 0, -1);
-            modelView.rotate(obj.azimuth, 0, 1, 0);
+            modelView.rotate(obj.azimuth, 0, -1, 0);
             modelView.rotate(obj.elevation, -1, 0, 0);
             modelView.scale(obj.radius, obj.radius, obj.radius); %x,y,z
             

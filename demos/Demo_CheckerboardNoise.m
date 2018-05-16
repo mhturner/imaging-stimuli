@@ -10,9 +10,9 @@ canvas.setProjection(projection); %set perspective
 
 %checkerboard stimulus
  %board aspect ratio is in line with semisphere aspect ratio
- phiLimits = [0.25*pi, 0.75*pi];
+phiLimits = [0*pi, 1*pi];
 thetaLimits = [0.5*pi, 1.5*pi];
-checkSize_deg = 20;
+checkSize_deg = 10;
 nChecksX = ceil(rad2deg(range(thetaLimits)) / checkSize_deg);
 nChecksY = ceil(rad2deg(range(phiLimits)) / checkSize_deg);
 
@@ -43,6 +43,7 @@ checkerboardController = stage.builtin.controllers.PropertyController(board, 'im
 
 % Frame tracker stimulus:
 Tracker = clandininlab.stimuli.FrameTracker();
+% Tracker.size = [2 8]; %cm at projection screen
 
 presentation.addStimulus(board);
 presentation.addController(checkerboardController);

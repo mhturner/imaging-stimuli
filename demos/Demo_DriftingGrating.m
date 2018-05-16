@@ -12,8 +12,8 @@ canvas.setProjection(projection); %set perspective
 Grate = clandininlab.stimuli.Grating('square');
 Grate.contrast = 0.5;
 % Grate.position = [0 0 0];
-Grate.orientation = 0;
-Grate.spatialFreq = 1/45; %cpd
+Grate.orientation = 90;
+Grate.spatialFreq = 1/10; %cpd
 Grate.phiLimits = [0 pi];
 Grate.thetaLimits = [0*pi 2*pi];
 Grate.azimuth = 0;
@@ -28,14 +28,14 @@ presentation.addStimulus(Grate);
 presentation.addController(phaseController);
 
 %aperture mask
-Rectangle = clandininlab.stimuli.Rectangle();
-% Rectangle.position = [0 0 -0];
-Rectangle.color = 0.5;
-Rectangle.width = 120;
-Rectangle.height = 120;
-mask = stage.core.Mask.createCircularAperture(0.7,1024);
-Rectangle.setMask(mask);
-presentation.addStimulus(Rectangle);
+% Rectangle = clandininlab.stimuli.Rectangle();
+% % Rectangle.position = [0 0 -0];
+% Rectangle.color = 0.5;
+% Rectangle.width = 120;
+% Rectangle.height = 120;
+% mask = stage.core.Mask.createCircularAperture(0.7,1024);
+% Rectangle.setMask(mask);
+% presentation.addStimulus(Rectangle);
 
 presentation.play(canvas);
  
