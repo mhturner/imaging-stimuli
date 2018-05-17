@@ -16,12 +16,12 @@ presentation.addStimulus(Background);
 Rectangle = clandininlab.stimuli.Rectangle();
 Rectangle.color = [1 1 1];
 
-Rectangle.width = 10;
-Rectangle.height = 20;
-Rectangle.rectOrientation = 45;
+Rectangle.width = 5;
+Rectangle.height = 5;
+Rectangle.rectOrientation = 0;
 
-Rectangle.elevation = 30;
-Rectangle.azimuth = -45;
+Rectangle.elevation = 5;
+Rectangle.azimuth = 0;
 
 thetaSpeed = 20;
 thetaStart = Rectangle.azimuth;
@@ -33,7 +33,7 @@ thetaC = stage.builtin.controllers.PropertyController(Rectangle, 'azimuth',@(sta
 phiC = stage.builtin.controllers.PropertyController(Rectangle, 'elevation',@(state)phiStart + phiSpeed*state.time);
 
 presentation.addStimulus(Rectangle);
-presentation.addController(thetaC);
-presentation.addController(phiC);
+% presentation.addController(thetaC);
+% presentation.addController(phiC);
 presentation.play(canvas);
 
