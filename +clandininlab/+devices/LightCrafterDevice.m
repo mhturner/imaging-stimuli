@@ -106,13 +106,6 @@ classdef LightCrafterDevice < symphonyui.core.Device
         end
         
         function play(obj, presentation)
-            % set center offset on all user-defined stimuli
-            centerOffset = obj.getCenterOffset();
-            for ss = 1:length(presentation.stimuli)
-                presentation.stimuli{ss}.azimuth = centerOffset(1);
-                presentation.stimuli{ss}.elevation = centerOffset(2);
-            end
-
             % add background by making a uniform semisphere at the bottom
             % level of the presentation:
             background = clandininlab.stimuli.PerspectiveSphere();

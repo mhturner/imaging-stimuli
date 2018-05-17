@@ -67,7 +67,7 @@ classdef StationarySquareMapping < clandininlab.protocols.ClandininLabStageProto
             p.setBackgroundColor(obj.backgroundIntensity);
             
             % "Rectangle" stimulus:
-            Rect = clandininlab.stimuli.Rectangle;
+            Rect = clandininlab.stimuli.Rectangle();
             Rect.width = obj.squareSize;
             Rect.height = obj.squareSize;
             Rect.elevation = obj.currentElevation;
