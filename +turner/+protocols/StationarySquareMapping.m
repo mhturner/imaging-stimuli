@@ -50,7 +50,7 @@ classdef StationarySquareMapping < clandininlab.protocols.ClandininLabStageProto
             index = mod(obj.numEpochsCompleted, size(obj.locationSequence,1)) + 1;
             % Randomize the bar width sequence order at the beginning of each sequence.
             if index == 1 && obj.randomizeOrder
-                randInds = randsample(1:length(obj.locationSequence), length(obj.locationSequence));
+                randInds = randperm(size(obj.locationSequence,1));
                 obj.locationSequence = obj.locationSequence(randInds,:);
             end
             obj.currentAzimuth = obj.locationSequence(index,1);
@@ -77,7 +77,7 @@ classdef StationarySquareMapping < clandininlab.protocols.ClandininLabStageProto
             
             % Color controller:
             if (obj.temporalFrequency > 0) 
-                rectColor = stage.builtin.controllers.PropertyController(grate, 'color',...
+                rectColor = stage.builtin.controllers.PropertyController(Rect, 'color',...
                     @(state)getRectColor(obj, state.time - obj.preTime/1e3));
                 p.addController(rectColor); %add the controller
             end
