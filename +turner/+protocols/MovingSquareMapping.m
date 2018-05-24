@@ -1,23 +1,24 @@
-classdef StationarySquareMapping < clandininlab.protocols.ClandininLabStageProtocol
+classdef MovingSquareMapping < clandininlab.protocols.ClandininLabStageProtocol
     
     properties
-        preTime = 500                  % Leading duration (ms)
+        preTime = 500                   % Leading duration (ms)
         stimTime = 5000                 % Duration (ms)
-        tailTime = 500                 % Trailing duration (ms)
-        contrast = 0.9                  % contrast of modulated square, relative to background (0-1)
-        temporalFrequency = 2           % Hz
+        tailTime = 500                  % Trailing duration (ms)
+        intensity = 0                   % intensity of square (0-1)
+        speed = 30                      % Deg/sec.
         backgroundIntensity = 0.5       % Background light intensity (0-1)
         numberOfAverages = uint16(100)  % Number of epochs
-        squareSize = 10                  % Deg.
-        azimuths = -40:10:40            % Deg.
+        squareSize = 10                 % Deg.
+        azimuths = -50:10:50            % Deg.
         elevations = 5:10:55            % Deg.    
-        randomizeOrder = true           % Randomize sequence of locations t/f
+        randomizeOrder = false          % Randomize sequence of locations t/f
     end
     
     properties (Hidden)
+        movementAxisSequence
         locationSequence
-        currentAzimuth
-        currentElevation
+        currentLocation
+        currentAxis
     end
 
     methods
@@ -38,26 +39,27 @@ classdef StationarySquareMapping < clandininlab.protocols.ClandininLabStageProto
         function prepareRun(obj)
             prepareRun@clandininlab.protocols.ClandininLabStageProtocol(obj);
             
-            % Create location sequence
-            [Az, El] = meshgrid(obj.azimuths, obj.elevations);
-            obj.locationSequence = [Az(:),El(:)]; % all pairwise combinations
+            % Create sequences for location and axis search(1 = az, 2 = el)
+            obj.locationSequence = [obj.azimuths obj.elevations];
+            obj.movementAxisSequence = [ones(size(obj.azimuths)), 2*ones(size(obj.elevations))];
         end
         
         function prepareEpoch(obj, epoch)
             prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj, epoch);
             
             % Determine current azimuth & elevation
-            index = mod(obj.numEpochsCompleted, size(obj.locationSequence,1)) + 1;
+            index = mod(obj.numEpochsCompleted, size(obj.locationSequence,2)) + 1;
             % Randomize the bar width sequence order at the beginning of each sequence.
             if index == 1 && obj.randomizeOrder
-                randInds = randperm(size(obj.locationSequence,1));
-                obj.locationSequence = obj.locationSequence(randInds,:);
+                randInds = randperm(size(obj.locationSequence,2));
+                obj.locationSequence = obj.locationSequence(randInds);
+                obj.movementAxisSequence = obj.movementAxisSequence(randInds);
             end
-            obj.currentAzimuth = obj.locationSequence(index,1);
-            obj.currentElevation = obj.locationSequence(index,2);
+            obj.currentLocation = obj.locationSequence(index);
+            obj.currentAxis = obj.movementAxisSequence(index);
             
-            epoch.addParameter('currentAzimuth', obj.currentAzimuth);
-            epoch.addParameter('currentElevation', obj.currentElevation);
+            epoch.addParameter('currentLocation', obj.currentLocation);
+            epoch.addParameter('currentAxis', obj.currentAxis);
         end
         
         function p = createPresentation(obj)
@@ -70,22 +72,17 @@ classdef StationarySquareMapping < clandininlab.protocols.ClandininLabStageProto
             Rect = clandininlab.stimuli.Rectangle();
             Rect.width = obj.squareSize;
             Rect.height = obj.squareSize;
-            Rect.elevation = obj.currentElevation;
-            Rect.azimuth = obj.currentAzimuth;
-
+            startPosition = -60;
+            if obj.currentAxis == 1 %az search (move thru el)
+                Rect.azimuth = obj.currentLocation;
+                movementController = stage.builtin.controllers.PropertyController(Rectangle, 'elevation',@(state)startPosition + obj.speed*state.time);
+            elseif obj.currentAxis == 2 %el search (move thru az)
+                Rect.elevation = obj.currentLocation;
+                movementController = stage.builtin.controllers.PropertyController(Rectangle, 'azimuth',@(state)startPosition + obj.speed*state.time);
+            end
             p.addStimulus(Rect);
-            
-            % Color controller:
-            if (obj.temporalFrequency > 0) 
-                rectColor = stage.builtin.controllers.PropertyController(Rect, 'color',...
-                    @(state)getRectColor(obj, state.time - obj.preTime/1e3));
-                p.addController(rectColor); %add the controller
-            end
-            function I = getRectColor(obj, time)
-                c = obj.contrast.*sin(2 * pi * obj.temporalFrequency * time);
-                I = obj.backgroundIntensity + c*obj.backgroundIntensity;
-            end
-            
+            p.addController(movementController); %add the movement controller
+
             % Visibility controller
             rectVisible = stage.builtin.controllers.PropertyController(Rect, 'visible', @(state)state.time >= obj.preTime * 1e-3 && state.time < (obj.preTime + obj.stimTime) * 1e-3);
             p.addController(rectVisible);
