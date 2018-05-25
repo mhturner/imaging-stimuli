@@ -9,7 +9,7 @@ classdef MovingSquareMapping < clandininlab.protocols.ClandininLabStageProtocol
         backgroundIntensity = 0.5       % Background light intensity (0-1)
         numberOfAverages = uint16(100)  % Number of epochs
         squareSize = 10                 % Deg.
-        azimuths = -50:10:50            % Deg.
+        azimuths = -40:10:40            % Deg.
         elevations = 5:10:55            % Deg.    
         randomizeOrder = false          % Randomize sequence of locations t/f
     end
@@ -75,10 +75,10 @@ classdef MovingSquareMapping < clandininlab.protocols.ClandininLabStageProtocol
             startPosition = -60;
             if obj.currentAxis == 1 %az search (move thru el)
                 Rect.azimuth = obj.currentLocation;
-                movementController = stage.builtin.controllers.PropertyController(Rectangle, 'elevation',@(state)startPosition + obj.speed*state.time);
+                movementController = stage.builtin.controllers.PropertyController(Rect, 'elevation',@(state)startPosition + obj.speed*state.time);
             elseif obj.currentAxis == 2 %el search (move thru az)
                 Rect.elevation = obj.currentLocation;
-                movementController = stage.builtin.controllers.PropertyController(Rectangle, 'azimuth',@(state)startPosition + obj.speed*state.time);
+                movementController = stage.builtin.controllers.PropertyController(Rect, 'azimuth',@(state)startPosition + obj.speed*state.time);
             end
             p.addStimulus(Rect);
             p.addController(movementController); %add the movement controller
