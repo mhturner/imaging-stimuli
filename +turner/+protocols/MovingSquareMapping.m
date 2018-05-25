@@ -72,6 +72,7 @@ classdef MovingSquareMapping < clandininlab.protocols.ClandininLabStageProtocol
             Rect = clandininlab.stimuli.Rectangle();
             Rect.width = obj.squareSize;
             Rect.height = obj.squareSize;
+            Rect.color = obj.intensity;
             startPosition = -60;
             if obj.currentAxis == 1 %az search (move thru el)
                 Rect.azimuth = obj.currentLocation;
