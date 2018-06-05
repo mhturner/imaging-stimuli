@@ -21,7 +21,10 @@ classdef (Abstract) ClandininLabStageProtocol < symphonyui.core.Protocol
             scanNumber = triggers{1}.scanNumber;
             epoch.addParameter('scanNumber', scanNumber);
             %advance the scan count:
-            triggers{1}.scanNumber = triggers{1}.scanNumber + 1; 
+            triggers{1}.scanNumber = triggers{1}.scanNumber + 1;
+            
+            %epoch number (within run)
+            epoch.addParameter('epochNumber', obj.numEpochsCompleted + 1);
         end
         
         function controllerDidStartHardware(obj)
