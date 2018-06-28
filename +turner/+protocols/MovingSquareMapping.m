@@ -5,7 +5,7 @@ classdef MovingSquareMapping < clandininlab.protocols.ClandininLabStageProtocol
         stimTime = 5000                 % Duration (ms)
         tailTime = 500                  % Trailing duration (ms)
         intensity = 0                   % intensity of square (0-1)
-        speed = 30                      % Deg/sec.
+        speed = 50                      % Deg/sec.
         backgroundIntensity = 0.5       % Background light intensity (0-1)
         numberOfAverages = uint16(100)  % Number of epochs
         squareSize = 10                 % Deg.
@@ -49,7 +49,7 @@ classdef MovingSquareMapping < clandininlab.protocols.ClandininLabStageProtocol
             
             % Determine current azimuth & elevation
             index = mod(obj.numEpochsCompleted, size(obj.locationSequence,2)) + 1;
-            % Randomize the bar width sequence order at the beginning of each sequence.
+            % Randomize the sequence order at the beginning of each sequence.
             if index == 1 && obj.randomizeOrder
                 randInds = randperm(size(obj.locationSequence,2));
                 obj.locationSequence = obj.locationSequence(randInds);
