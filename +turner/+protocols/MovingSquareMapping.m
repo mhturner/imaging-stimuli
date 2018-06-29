@@ -2,7 +2,7 @@ classdef MovingSquareMapping < clandininlab.protocols.ClandininLabStageProtocol
     
     properties
         preTime = 500                   % Leading duration (ms)
-        stimTime = 5000                 % Duration (ms)
+        stimTime = 3000                 % Duration (ms)
         tailTime = 500                  % Trailing duration (ms)
         intensity = 0                   % intensity of square (0-1)
         speed = 50                      % Deg/sec.

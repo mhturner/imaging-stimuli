@@ -12,7 +12,7 @@ classdef MovingBar < clandininlab.protocols.ClandininLabStageProtocol
         center = [0, 30]                % Deg. (az., el.)
         backgroundIntensity = 0.5       % Background light intensity (0-1)
         numberOfAverages = uint16(40)    % Number of epochs
-        randomizeOrder = True           % Randomize sequence of orientations t/f
+        randomizeOrder = true           % Randomize sequence of orientations t/f
     end
     
     properties (Hidden)
@@ -78,8 +78,8 @@ classdef MovingBar < clandininlab.protocols.ClandininLabStageProtocol
                 sind(obj.currentOrientation)*(startPosition + obj.barSpeed*state.time));
 
             p.addStimulus(Rect);
-            presentation.addController(thetaController);
-            presentation.addController(phiController);
+            p.addController(thetaController);
+            p.addController(phiController);
 
             % Visibility controller
             rectVisible = stage.builtin.controllers.PropertyController(Rect, 'visible', @(state)state.time >= obj.preTime * 1e-3 && state.time < (obj.preTime + obj.stimTime) * 1e-3);
