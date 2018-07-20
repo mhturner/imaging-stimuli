@@ -75,7 +75,8 @@ classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
             index = mod(obj.numEpochsCompleted, length(obj.orientationSequence)) + 1;
             % Randomize the orientation sequence order at the beginning of each sequence.
             if index == 1 && obj.randomizeOrder
-                obj.orientationSequence = randsample(obj.orientationSequence, length(obj.orientationSequence));
+                randInds = randperm(length(obj.orientationSequence));
+                obj.orientationSequence = obj.orientationSequence(randInds);
             end
             obj.currentOrientation = obj.orientationSequence(index);
             epoch.addParameter('currentOrientation', obj.currentOrientation);
