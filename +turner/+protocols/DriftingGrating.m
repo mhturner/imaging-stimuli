@@ -1,9 +1,9 @@
 classdef DriftingGrating < clandininlab.protocols.ClandininLabStageProtocol
     
     properties
-        preTime = 2000                  % Leading duration (ms)
-        stimTime = 10000                 % Duration (ms)
-        tailTime = 2000                 % Trailing duration (ms)
+        preTime = 500                  % Leading duration (ms)
+        stimTime = 3000                 % Duration (ms)
+        tailTime = 500                 % Trailing duration (ms)
         gratingProfile = 'square'       % square, sine, or sawtooth grating in space
         spatialFrequency = 0.1          % (c.p.d.)
         speed = 30                      % Degrees per second

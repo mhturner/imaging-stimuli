@@ -1,22 +1,21 @@
-classdef MovingBar < clandininlab.protocols.ClandininLabStageProtocol
+classdef ExpandingMovingSquare < clandininlab.protocols.ClandininLabStageProtocol
     properties
-        preTime = 500                  % Leading duration (ms)
-        stimTime = 3000                 % Duration (ms)
-        tailTime = 500                 % Trailing duration (ms)
-        intensity = 0                 % Bar intensity (0-1)
-        barWidth = 20                   % Deg. visual angle, parallel to axis of movement
-        barHeight = 40                  % Deg. visual angle, Perp. to axis of movement
-        barSpeed = 60                   % Deg./sec.
-        orientations = [0 45 90 135 180 225 270 315]  % Deg.
-        center = [0, 30]                % Deg. (az., el.)
-        backgroundIntensity = 0.5       % Background light intensity (0-1)
-        numberOfAverages = uint16(40)    % Number of epochs
-        randomizeOrder = true           % Randomize sequence of orientations t/f
+        preTime = 500                           % Leading duration (ms)
+        stimTime = 3000                          % Duration (ms)
+        tailTime = 500                           % Trailing duration (ms)
+        intensity = 0                           % Bar intensity (0-1)
+        squareSizes = [5, 10, 20, 30, 40, 50, 60]  % Deg. visual angle, Perp. to axis of movement
+        barSpeed = 60                            % Deg./sec.
+        orientation = 0                          % Deg.
+        center = [0, 30]                          % Deg. (az., el.)
+        backgroundIntensity = 0.5                 % Background light intensity (0-1)
+        numberOfAverages = uint16(40)             % Number of epochs
+        randomizeOrder = true                     % Randomize sequence of orientations t/f
     end
     
     properties (Hidden)
-        orientationSequence
-        currentOrientation
+        sizeSequence
+        currentSize
     end
     
     methods
@@ -38,22 +37,22 @@ classdef MovingBar < clandininlab.protocols.ClandininLabStageProtocol
             prepareRun@clandininlab.protocols.ClandininLabStageProtocol(obj);
             
             % Create sequences for orientation
-            obj.orientationSequence = obj.orientations;
+            obj.sizeSequence = obj.squareSizes;
         end
         
         function prepareEpoch(obj, epoch)
             prepareEpoch@clandininlab.protocols.ClandininLabStageProtocol(obj, epoch);
             
             % Determine current orientation
-            index = mod(obj.numEpochsCompleted, length(obj.orientationSequence)) + 1;
+            index = mod(obj.numEpochsCompleted, length(obj.sizeSequence)) + 1;
             % Randomize the bar orientation order at the beginning of each sequence.
             if index == 1 && obj.randomizeOrder
-                randInds = randperm(length(obj.orientationSequence));
-                obj.orientationSequence = obj.orientationSequence(randInds);
+                randInds = randperm(length(obj.sizeSequence));
+                obj.sizeSequence = obj.sizeSequence(randInds);
             end
-            obj.currentOrientation = obj.orientationSequence(index);
+            obj.currentSize = obj.sizeSequence(index);
             
-            epoch.addParameter('currentOrientation', obj.currentOrientation);
+            epoch.addParameter('currentSize', obj.currentSize);
         end
         
         function p = createPresentation(obj)
@@ -64,17 +63,17 @@ classdef MovingBar < clandininlab.protocols.ClandininLabStageProtocol
             
             % "Rectangle" stimulus:
             Rect = clandininlab.stimuli.Rectangle();
-            Rect.width = obj.barWidth;
-            Rect.height = obj.barHeight;
+            Rect.width = obj.currentSize;
+            Rect.height = obj.currentSize;
             Rect.color = obj.intensity;
-            Rect.rectOrientation = obj.currentOrientation;
+            Rect.rectOrientation = obj.orientation;
 
-            startPosition = -80; %deg. Enough to start off screen, empirically
+            startPosition = -90; %deg. Enough to start off screen, empirically
             thetaController = stage.builtin.controllers.PropertyController(Rect, 'azimuth',@(state)obj.center(1) +...
-                cosd(obj.currentOrientation)*(startPosition + obj.barSpeed*state.time));
+                cosd(obj.orientation)*(startPosition + obj.barSpeed*state.time));
             
             phiController = stage.builtin.controllers.PropertyController(Rect, 'elevation',@(state)obj.center(2) +...
-                sind(obj.currentOrientation)*(startPosition + obj.barSpeed*state.time));
+                sind(obj.orientation)*(startPosition + obj.barSpeed*state.time));
 
             p.addStimulus(Rect);
             p.addController(thetaController);
