@@ -78,13 +78,13 @@ classdef LmrfMapping < clandininlab.protocols.ClandininLabStageProtocol
             Rect.color = obj.intensity;
             Rect.rectOrientation = obj.currentOrientation;
 
-            distanceTraveled = obj.barSpeed * obj.stimTime; %deg
-            
+            distanceTraveled = obj.speed * obj.stimTime * 1e-3; %deg
+
             thetaController = stage.builtin.controllers.PropertyController(Rect, 'azimuth',@(state)obj.currentAzimuth +...
-                cosd(obj.currentOrientation)*(-distanceTraveled/2 + obj.barSpeed*state.time));
+                cosd(obj.currentOrientation)*(-distanceTraveled/2 + obj.speed*state.time));
             
             phiController = stage.builtin.controllers.PropertyController(Rect, 'elevation',@(state)obj.currentElevation +...
-                sind(obj.currentOrientation)*(-distanceTraveled/2 + obj.barSpeed*state.time));
+                sind(obj.currentOrientation)*(-distanceTraveled/2 + obj.speed*state.time));
 
             p.addStimulus(Rect);
             p.addController(thetaController);

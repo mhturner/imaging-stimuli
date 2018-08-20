@@ -70,7 +70,7 @@ classdef MovingBar < clandininlab.protocols.ClandininLabStageProtocol
             Rect.rectOrientation = obj.currentOrientation;
             
             
-            distanceTraveled = obj.barSpeed * obj.stimTime; %deg
+            distanceTraveled = obj.barSpeed * obj.stimTime * 1e-3; %deg
             
             thetaController = stage.builtin.controllers.PropertyController(Rect, 'azimuth',@(state)obj.center(1) +...
                 cosd(obj.currentOrientation)*(-distanceTraveled/2 + obj.barSpeed*state.time));
